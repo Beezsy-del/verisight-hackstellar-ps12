@@ -36,8 +36,8 @@ def test_sample_1_clean_synthetic_fixture():
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    assert report.overall_tamper_score < 35.0
-    assert report.verdict == "INCONCLUSIVE"
+    assert report.verdict == "REVIEW_REQUIRED"
+    assert any(f.id.startswith("f-receipt-text-") for f in report.findings)
     assert report.confidence_score is None
     assert all(box.confidence is None for box in report.all_bounding_boxes)
     assert not any(f.id == "f-l2-laser" for f in report.findings)

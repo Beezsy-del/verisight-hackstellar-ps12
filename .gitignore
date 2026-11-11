@@ -15,3 +15,8 @@ _uv/
 !.env.example
 
 supabase/.temp/
+
+.pytest_cache/
+.playwright-cli/
+output/
+reports/

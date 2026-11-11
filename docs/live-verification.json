@@ -1,0 +1,88 @@
+[
+  {
+    "path": "/",
+    "status": 200
+  },
+  {
+    "path": "/workbench",
+    "status": 200
+  },
+  {
+    "path": "/evaluation",
+    "status": 200
+  },
+  {
+    "path": "/docs",
+    "status": 200
+  },
+  {
+    "path": "/api/health",
+    "status": 200
+  },
+  {
+    "path": "/api/model/status",
+    "status": 200
+  },
+  {
+    "path": "/api/model/evaluation",
+    "status": 200
+  },
+  {
+    "path": "/api/demo-samples",
+    "status": 200
+  },
+  {
+    "sample": "sample_1",
+    "status": 200,
+    "seconds": 1.08,
+    "verdict": "INCONCLUSIVE",
+    "expected": "INCONCLUSIVE",
+    "hash_matches": true
+  },
+  {
+    "sample": "sample_2",
+    "status": 200,
+    "seconds": 0.5,
+    "verdict": "REVIEW_REQUIRED",
+    "expected": "REVIEW_REQUIRED",
+    "hash_matches": true
+  },
+  {
+    "sample": "sample_3",
+    "status": 200,
+    "seconds": 5.14,
+    "verdict": "REVIEW_REQUIRED",
+    "expected": "REVIEW_REQUIRED",
+    "hash_matches": true
+  },
+  {
+    "sample": "sample_4",
+    "status": 200,
+    "seconds": 3.34,
+    "verdict": "REVIEW_REQUIRED",
+    "expected": "REVIEW_REQUIRED",
+    "hash_matches": true
+  },
+  {
+    "sample": "sample_5",
+    "status": 200,
+    "seconds": 3.1,
+    "verdict": "REVIEW_REQUIRED",
+    "expected": "REVIEW_REQUIRED",
+    "hash_matches": true
+  },
+  {
+    "signed_session": 200
+  },
+  {
+    "signed_upload": 200
+  },
+  {
+    "signed_analysis": 200,
+    "verdict": "INCONCLUSIVE",
+    "hash_matches": true
+  },
+  {
+    "second_consumption": 404
+  }
+]

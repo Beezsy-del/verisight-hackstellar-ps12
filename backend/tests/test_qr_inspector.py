@@ -43,4 +43,6 @@ def test_qr_pattern_is_not_mistaken_for_tampered_text_geometry():
     assert report.layer3.details["qr_inspection"]["decoded_count"] == 1
     assert report.layer2.details["tokens_in_qr_regions_excluded"] > 0
     assert not any(row.is_alignment_outlier for row in report.layer2.lasers)
-    assert report.verdict == "INCONCLUSIVE"
+    assert report.verdict == "REVIEW_REQUIRED"
+    assert any(f.id == "f-text-coverage" for f in report.findings)
+    assert not any(f.id == "f-l2-laser" for f in report.findings)

@@ -5,3 +5,8 @@
 .pytest_cache/
 uploads/
 _uv/
+
+output/
+.playwright-cli/
+docs/
+.github/

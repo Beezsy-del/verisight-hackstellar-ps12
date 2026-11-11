@@ -3,11 +3,14 @@ import asyncio
 import json
 import logging
 import os
+from io import BytesIO
+from PIL import Image
 from datetime import datetime, timedelta, timezone
 from urllib.error import HTTPError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from uuid import UUID
+from starlette.concurrency import run_in_threadpool
 
 from app.services.supabase_store import save_case
 
@@ -43,6 +46,7 @@ def _request(path: str, key: str, method: str = "GET", body: bytes | None = None
         # Storage's response body identifies path, auth, and object-state errors;
         # include it in server logs while keeping public API errors generic.
         detail = exc.read().decode("utf-8", errors="replace")[:500]
+        exc.storage_detail = detail
         log.warning("Supabase Storage %s failed for %s: HTTP %s %s", method, path, exc.code, detail)
         raise
 
@@ -57,13 +61,14 @@ async def save_mobile_image(session_id: UUID, filename: str, content: bytes) -> 
             encoded_path = quote(path, safe="/")
             _request(
                 f"/storage/v1/object/{BUCKET}/{encoded_path}", key, "POST", content,
-                "application/octet-stream", extra_headers={"x-upsert": "true"},
+                Image.MIME[Image.open(BytesIO(content)).format], extra_headers={"x-upsert": "true"},
             )
             row = {
                 "session_id": str(session_id),
                 "filename": (filename.rsplit("/", 1)[-1] or "mobile_upload")[:255],
                 "storage_path": path,
                 "consumed_at": None,
+                "created_at": datetime.now(timezone.utc).isoformat(),
             }
             _request(
                 "/rest/v1/mobile_uploads?on_conflict=session_id", key, "POST",
@@ -94,6 +99,7 @@ async def create_signed_upload(session_id: UUID, filename: str) -> dict:
             "filename": safe_name,
             "storage_path": path,
             "consumed_at": None,
+                "created_at": datetime.now(timezone.utc).isoformat(),
         }
         _request(
             "/rest/v1/mobile_uploads?on_conflict=session_id", key, "POST",
@@ -129,36 +135,46 @@ async def consume_mobile_upload(session_id: UUID) -> dict | None:
                 "consumed_at": "is.null",
                 "select": "session_id,filename,storage_path",
                 "limit": "1",
+                "created_at": "gt." + (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
             })
             rows = json.loads(_request(f"/rest/v1/mobile_uploads?{query}", key))
             if not rows:
                 return None, None
             row = rows[0]
             object_path = quote(row["storage_path"], safe="/")
-            image = _request(f"/storage/v1/object/{BUCKET}/{object_path}", key)
+            try:
+                image = _request(f"/storage/v1/object/{BUCKET}/{object_path}", key)
+            except HTTPError as exc:
+                # Desktop polling often arrives before the signed upload finishes.
+                if exc.code == 404 or (exc.code == 400 and "not found" in getattr(exc, "storage_detail", "").lower()):
+                    return None, None
+                raise
             return row, image
 
         row, content = await asyncio.to_thread(fetch)
         if not row or content is None:
             return None
 
-        from app.services.forensic.pipeline import analyze_screenshot
-        report = analyze_screenshot(content, filename=row["filename"])
-        await save_case(report, "mobile_upload")
-
-        def mark_consumed() -> None:
+        def claim() -> bool:
             _, key = _credentials()
-            query = urlencode({
-                "session_id": f"eq.{session_id}",
-                "consumed_at": "is.null",
-            })
+            query = urlencode({"session_id": f"eq.{session_id}", "consumed_at": "is.null"})
             body = json.dumps({"consumed_at": datetime.now(timezone.utc).isoformat()}).encode()
-            _request(f"/rest/v1/mobile_uploads?{query}", key, "PATCH", body,
-                     "application/json", "return=minimal")
+            rows = json.loads(_request(f"/rest/v1/mobile_uploads?{query}", key, "PATCH", body,
+                                       "application/json", "return=representation"))
+            return len(rows) == 1
 
-        await asyncio.to_thread(mark_consumed)
-        await delete_mobile_image(session_id)
-        return report.model_dump()
+        # The conditional UPDATE is atomic in PostgreSQL. Only its winner may
+        # analyze, persist, or delete the object; concurrent polls return empty.
+        if not await asyncio.to_thread(claim):
+            return None
+        try:
+            from app.services.forensic.pipeline import analyze_screenshot
+            report = await run_in_threadpool(analyze_screenshot, content, filename=row["filename"])
+            await save_case(report, "mobile_upload")
+            return report.model_dump()
+        finally:
+            await delete_mobile_image(session_id)
+
     except Exception:
         log.exception("Could not consume mobile evidence session %s", session_id)
         raise

@@ -39,52 +39,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
     "ORIGINAL" | "ELA" | "WAVELET" | "LASER"
   >("ELA");
 
-  // Fallback demo samples if not passed from parent
-  const samples =
-    demoSamples.length > 0
-      ? demoSamples
-      : [
-          {
-            id: "sample_1",
-            title: "Genuine GPay UPI (₹1,250.00)",
-            scenario: "Authentic mobile screenshot with uniform quantization, aligned baselines, and valid UTR.",
-            expected_verdict: "AUTHENTIC_VERIFIED",
-            target_score_range: "4% – 9%",
-            tags: ["Genuine", "UPI", "GPay", "Aligned"],
-          },
-          {
-            id: "sample_2",
-            title: "Pixel-Spliced Amount (₹95,250.00)",
-            scenario: "Amount altered with off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
-            expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "91% – 97%",
-            tags: ["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
-          },
-          {
-            id: "sample_3",
-            title: "Fake Generator / DOM Edit",
-            scenario: "Uniform PNG with status-bar clock paradox (11:12 vs 11:45 AM) and invalid 10-digit UTR.",
-            expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "86% – 93%",
-            tags: ["DOM Edit", "Generator", "Clock Paradox", "Fake UTR"],
-          },
-          {
-            id: "sample_4",
-            title: "WhatsApp-Forwarded Forgery",
-            scenario: "Spliced receipt passed through WhatsApp delivery (EXIF stripped, 4:2:0 subsampling, JPEG Q=77).",
-            expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "82% – 89%",
-            tags: ["WhatsApp", "Laundered", "Re-compressed", "Surviving Geometry"],
-          },
-          {
-            id: "sample_5",
-            title: "Copy-Move Cloned Digits",
-            scenario: "Digit sequence cloned to inflate balance; non-native cropped viewport (680x1120).",
-            expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "85% – 92%",
-            tags: ["Copy-Move", "Cloned Digits", "ORB", "Cropped Viewport"],
-          },
-        ];
+  const samples = demoSamples;
 
   return (
     <div className="relative min-h-[calc(100vh-3.5rem)] w-full overflow-y-auto bg-[#060911] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
@@ -105,7 +60,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               </span>
               <span>DIGITAL PAYMENT EVIDENCE FORENSICS</span>
               <span className="text-slate-500">|</span>
-              <span className="text-slate-400">v1.2.1-calibrated</span>
+              <span className="text-slate-400">v1.0 · heuristic</span>
             </div>
 
             {/* Headline */}
@@ -117,11 +72,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             </h1>
 
             {/* Supporting paragraph */}
-            <p className="text-base text-slate-300 sm:text-lg leading-relaxed max-w-2xl font-sans">
-              VeriSight Pro equips cybercrime officers, fraud intelligence teams, and legal counsel
-              to inspect compressed UPI receipts, expose subtle splice boundaries, and generate
-              court-admissible Section 94 BNSS forensic dossiers beyond naked-eye inspection.
-            </p>
+            <p className="text-base text-slate-300 sm:text-lg leading-relaxed max-w-2xl font-sans">Inspect pixel residuals, text-like geometry, metadata, and readable QR payloads. VeriSight provides review cues; it does not prove authenticity, detect every edit, or verify a payment.</p>
 
             {/* Dual CTAs */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -157,12 +108,12 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <span className="text-sm font-semibold text-white">4 Core Layers</span>
               </div>
               <div>
-                <span className="block text-slate-400">Statutory Notice</span>
-                <span className="text-sm font-semibold text-emerald-400">Sec 94 BNSS Ready</span>
+                <span className="block text-slate-400">Review Report</span>
+                <span className="text-sm font-semibold text-emerald-400">Printable findings</span>
               </div>
               <div>
                 <span className="block text-slate-400">Analysis Privacy</span>
-                <span className="text-sm font-semibold text-sky-400">Ephemeral In-Memory</span>
+                <span className="text-sm font-semibold text-sky-400">Summary persistence</span>
               </div>
             </div>
           </div>
@@ -175,11 +126,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-500 inline-block animate-pulse" />
                   <span className="font-mono text-xs font-semibold text-slate-200">
-                    INTERACTIVE MULTI-SPECTRAL PREVIEW
+                    ILLUSTRATIVE LAYER PREVIEW
                   </span>
                 </div>
                 <span className="font-mono text-[10px] text-amber-400 bg-amber-950/60 border border-amber-800/40 px-2 py-0.5 rounded">
-                  SYNTHETIC SAMPLE S2
+                  ILLUSTRATION · NOT A RESULT
                 </span>
               </div>
 
@@ -225,7 +176,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                       {activePreviewLayer === "ORIGINAL" && (
                         <div className="border-transparent">
                           <span className="text-xl font-bold font-mono text-white">₹95,250.00</span>
-                          <span className="block text-[9px] text-slate-400">Naked eye view (looks genuine)</span>
+                          <span className="block text-[9px] text-slate-400">Illustrative interface</span>
                         </div>
                       )}
 
@@ -233,7 +184,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                         <div className="relative rounded bg-rose-950/70 border border-rose-500/60 p-1 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
                           <span className="text-xl font-bold font-mono text-rose-300">₹95,250.00</span>
                           <span className="block text-[9px] font-mono text-rose-400 font-semibold">
-                            ΔQ Outlier (+41.2% ELA Energy)
+                            Illustrative residual overlay
                           </span>
                         </div>
                       )}
@@ -251,7 +202,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                         <div className="relative rounded bg-amber-950/70 border border-amber-500/60 p-1 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                           <span className="text-xl font-bold font-mono text-amber-200">₹95,250.00</span>
                           <span className="block text-[9px] font-mono text-amber-400 font-semibold">
-                            Laser Baseline Drift: +3.8px drop
+                            Illustrative baseline overlay
                           </span>
                         </div>
                       )}
@@ -271,7 +222,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               {/* Card Footer with Quick Action */}
               <div className="mt-3 flex items-center justify-between pt-1 text-xs">
                 <span className="text-slate-400 font-mono text-[11px]">
-                  Detected Tamper Risk: <strong className="text-rose-400">94.8% (Manipulated)</strong>
+                  Illustration only: <strong className="text-rose-400">No measured result</strong>
                 </span>
                 <button
                   onClick={() => onNavigate("/workbench", { case: "sample_2" })}
@@ -296,10 +247,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
               Multi-Spectral Forensic Pipeline
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              VeriSight Pro analyzes payment screenshots across four independent mathematical domains
-              so no single compression or laundering step can blind the investigation.
-            </p>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base">The pipeline combines pixel, geometry, metadata, and overlap rules. Compression, resizing, and ordinary interface design can affect all of these cues.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -308,14 +256,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-4">
                 <Activity className="h-5 w-5" />
               </div>
-              <span className="font-mono text-xs font-semibold text-sky-400">LAYER 01</span>
+              <span className="font-mono text-xs font-semibold text-sky-400">PIXEL CUE 01</span>
               <h3 className="text-base font-bold text-white mt-1">Compression ELA</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Computes Error Level Analysis against calibrated 90% recompression baselines.
-                Reveals differential quantization artifacts where amounts or UTRs have been modified.
-              </p>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Displays JPEG reconstruction residuals. Non-JPEG images receive no ELA anomaly score. Residual differences alone do not establish an edit.</p>
               <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Photoshop & Paint patches
+                Cue: Reconstruction residuals
               </div>
             </div>
 
@@ -324,14 +269,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-950/60 text-indigo-400 mb-4">
                 <Cpu className="h-5 w-5" />
               </div>
-              <span className="font-mono text-xs font-semibold text-indigo-400">LAYER 02</span>
+              <span className="font-mono text-xs font-semibold text-indigo-400">PIXEL CUE 02</span>
               <h3 className="text-base font-bold text-white mt-1">Wavelet db4 Analysis</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Applies Daubechies 4 discrete wavelet transform to extract high-frequency subbands
-                (HH, HL, LH). Exposes synthetic smoothing and zero-noise voids common in fake receipts.
-              </p>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Maps local variation in a db4 diagonal high-pass residual. Flat UI backgrounds and resampling can produce the same low-variation regions.</p>
               <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Artificial blur & denoised clones
+                Cue: Local residual variation
               </div>
             </div>
 
@@ -340,14 +282,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-teal-500/30 bg-teal-950/60 text-teal-400 mb-4">
                 <Fingerprint className="h-5 w-5" />
               </div>
-              <span className="font-mono text-xs font-semibold text-teal-400">LAYER 03</span>
+              <span className="font-mono text-xs font-semibold text-teal-400">PIXEL CUE 03</span>
               <h3 className="text-base font-bold text-white mt-1">ORB Copy-Move Detection</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Executes Oriented FAST and Rotated BRIEF keypoint matching across screenshot tiles.
-                Detects duplicated numerical glyphs, cloned bank logos, and fabricated timestamps.
-              </p>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Groups matching ORB features into candidate repeated regions. Repeated text, logos, and interface elements can match without editing.</p>
               <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Cloned digits & spliced stamps
+                Cue: Repeated features
               </div>
             </div>
 
@@ -356,14 +295,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-950/60 text-amber-400 mb-4">
                 <Sliders className="h-5 w-5" />
               </div>
-              <span className="font-mono text-xs font-semibold text-amber-400">LAYER 04</span>
+              <span className="font-mono text-xs font-semibold text-amber-400">GEOMETRY CUE</span>
               <h3 className="text-base font-bold text-white mt-1">Text Baseline Geometry</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Calculates sub-pixel font baseline angles and character bounding box alignments.
-                Flags micro-kerning irregularities and vertical misalignments exceeding 1.8 pixels.
-              </p>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Groups text-like components into rows and measures baseline differences. It does not recognize text or verify the displayed amount.</p>
               <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Typographic drift & font substitution
+                Cue: Component baseline variation
               </div>
             </div>
           </div>
@@ -378,11 +314,9 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               Operational Protocol
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              From Ingestion to Judicial Summons
+              From Upload to Human Review
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              A standard operating procedure engineered specifically for cybercrime desks and fraud analysis.
-            </p>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base">A workflow for exploratory screenshot review.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
@@ -401,11 +335,8 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
               <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">02</div>
               <h3 className="text-base font-bold text-white">Multi-Layer Decomposition</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Automated multi-spectral pipeline computes compression deltas, high-pass frequencies,
-                OCR baseline geometry, and camera metadata integrity simultaneously.
-              </p>
-              <div className="mt-3 font-mono text-[10px] text-sky-400">Mean processing &lt; 850ms</div>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Computes pixel residuals, component geometry, metadata and QR cues, then combines configured rules.</p>
+              <div className="mt-3 font-mono text-[10px] text-sky-400">Processing time depends on image size</div>
             </div>
 
             {/* Step 3 */}
@@ -422,12 +353,9 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             {/* Step 4 */}
             <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
               <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">04</div>
-              <h3 className="text-base font-bold text-white">Statutory Dossier Export</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Export verifiable PDF investigation reports or generate a Section 94 BNSS
-                statutory summons document to serve on banks or intermediary payment apps.
-              </p>
-              <div className="mt-3 font-mono text-[10px] text-emerald-400">Sec 94 BNSS Compliant</div>
+              <h3 className="text-base font-bold text-white">Review Report Export</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Print a review report with the file hash, measurements, and limitations. No statutory notice generator or legal certification is active.</p>
+              <div className="mt-3 font-mono text-[10px] text-emerald-400">Human review required</div>
             </div>
           </div>
         </div>
@@ -441,12 +369,9 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               Methodological Integrity
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              What VeriSight Verifies & What It Does Not
+              Review Cues & Limitations
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Digital image forensics evaluates the visual and digital integrity of the file itself.
-              Investigators must understand the exact boundary between pixel forensics and banking ledgers.
-            </p>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base">A heuristic finding is a prompt for inspection. Neither a low score nor an overlapping region establishes authenticity or manipulation.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -457,7 +382,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-emerald-200">Verified Capabilities</h3>
+                  <h3 className="text-lg font-bold text-emerald-200">Available Review Cues</h3>
                   <span className="text-xs font-mono text-emerald-400">Deterministic & Statistical Image Tests</span>
                 </div>
               </div>
@@ -466,31 +391,31 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Compression Quantization Inconsistencies:</strong> Identifies modified regions saved with different JPEG quality factors than the host image.
+                    <strong>Compression Quantization Inconsistencies:</strong> Displays JPEG reconstruction differences that can also arise from ordinary encoding.
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
                   <span>
-                    <strong>High-Frequency Wavelet Perturbations:</strong> Exposes synthetic brush smoothing, copy voids, and artificial Gaussian smoothing.
+                    <strong>High-Frequency Wavelet Perturbations:</strong> Shows low residual variation; smooth UI backgrounds can produce similar patterns.
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Typographic Alignment & Baseline Drift:</strong> Measures font baseline angle shifts and micro-kerning discrepancies across amount fields.
+                    <strong>Typographic Alignment & Baseline Drift:</strong> Measures component baseline differences; text recognition is unavailable.
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Cloned Transaction Digit Sequences:</strong> Uses ORB descriptor keypoint clustering to pinpoint duplicated numbers or reference IDs.
+                    <strong>Cloned Transaction Digit Sequences:</strong> Finds repeated feature candidates, including ordinary repeated UI elements.
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Temporal & Viewport Sanity:</strong> Checks status bar clock consistency against receipt body timestamps and detects non-standard device crops.
+                    <strong>Temporal & Viewport Sanity:</strong> Checks available metadata text and image dimensions; screenshot text is not OCR-verified.
                   </span>
                 </li>
               </ul>
@@ -518,7 +443,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Does Not Prove Criminal Intent:</strong> Image manipulation detection provides technical corroboration of alterations, but cannot identify who performed the modification.
+                    <strong>Does Not Prove Criminal Intent:</strong> Review cues do not establish editing or identify an author.
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
@@ -530,7 +455,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <li className="flex items-start gap-2.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
                   <span>
-                    <strong>Corroboration Tool, Not Sole Determiner:</strong> Results should be accompanied by statutory Section 94 BNSS notices to banks for definitive transaction confirmation.
+                    <strong>Corroboration Tool, Not Sole Determiner:</strong> Confirm transaction status independently with the payment provider.
                   </span>
                 </li>
               </ul>
@@ -550,10 +475,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
                 Demonstration Case Catalog
               </h2>
-              <p className="mt-2 text-slate-400 text-sm max-w-xl">
-                Explore real synthetic benchmark cases exhibiting common forgery vectors.
-                Each card can be directly opened inside the Forensic Workbench.
-              </p>
+              <p className="mt-2 text-slate-400 text-sm max-w-xl">Explore five synthetic regression fixtures. They demonstrate behavior, not accuracy on real screenshots.</p>
             </div>
             <div className="shrink-0">
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-1.5 text-xs font-mono text-amber-300">
@@ -566,8 +488,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {samples.map((sample, idx) => {
               const isManipulated =
-                sample.expected_verdict?.includes("MANIPULATED") ||
-                sample.expected_verdict?.includes("FORGERY");
+                sample.expected_verdict !== "INCONCLUSIVE";
 
               return (
                 <div
@@ -595,7 +516,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                               : "bg-emerald-950/80 text-emerald-300 border border-emerald-800/50"
                           }`}
                         >
-                          {isManipulated ? "MANIPULATED" : "AUTHENTIC"}
+                          {sample.expected_verdict}
                         </span>
                       </div>
 
@@ -655,12 +576,9 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   Model Governance & Empirical Rigor
                 </span>
                 <h2 className="text-xl sm:text-3xl font-bold text-white mt-1">
-                  VeriSight Fusion GBDT v1.2.1
+                  Deterministic heuristic analyzer
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl font-sans">
-                  The forensic core combines 5 independent estimators into a calibrated HistGradientBoosting
-                  Classifier using 3-fold CalibratedClassifierCV (Sigmoid) to produce trustworthy probabilities.
-                </p>
+                <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl font-sans">The deployed analyzer combines deterministic rules. No trained classifier, calibration corpus, or held-out accuracy evaluation is configured.</p>
               </div>
 
               <button
@@ -680,9 +598,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   <strong className="text-amber-200 uppercase font-mono block mb-1">
                     Mandatory Benchmark Disclosure:
                   </strong>
-                  Current evaluation uses synthetic development samples. Real-world generalization
-                  has not yet been independently established. Benchmark scores reflect in-sample
-                  and held-out synthetic test partitions (20 development, 7 held-out evaluation samples).
+                  Only five synthetic regression fixtures are bundled. No independent authenticity labels, held-out accuracy metrics, or calibrated probabilities are available.
                 </div>
               </div>
             </div>
@@ -690,29 +606,29 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             {/* Telemetry Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
               <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">ROC-AUC (Dev GBDT)</span>
-                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">0.910</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">1.000 (Test Partition)</span>
+                <span className="font-mono text-[11px] text-slate-400 block">ROC-AUC</span>
+                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">Unavailable</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">No held-out evaluation</span>
               </div>
 
               <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Brier Score</span>
-                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">0.0992</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Calibrated probability</span>
+                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">Unavailable</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Not calibrated</span>
               </div>
 
               <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Benchmark Corpus</span>
-                <span className="font-mono text-2xl font-bold text-white mt-1 block">27 Samples</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">20 Dev / 7 Held-out Test</span>
+                <span className="font-mono text-2xl font-bold text-white mt-1 block">5 Fixtures</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Synthetic regression only</span>
               </div>
 
               <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Calibration Model</span>
                 <span className="font-mono text-sm font-bold text-indigo-300 mt-2 block">
-                  CalibratedClassifierCV
+                  None deployed
                 </span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Sigmoid (3-Fold CV)</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">No calibration dataset</span>
               </div>
             </div>
           </div>
@@ -727,11 +643,9 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               Judicial & Data Safeguards
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              Data Privacy & Statutory Framework
+              Data Handling & Report Scope
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Engineered with strict zero-retention principles and integrated Section 94 BNSS legal notice generation.
-            </p>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base">Case summaries are persisted when the database is connected. Signed uploads temporarily use private storage.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -739,33 +653,24 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-4">
                 <Lock className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Ephemeral In-Memory Processing</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Evidence screenshots uploaded to VeriSight are processed in RAM memory buffers during
-                the analysis session. They are not stored permanently on disk or harvested into training corpora.
-              </p>
+              <h3 className="text-base font-bold text-white">Summary persistence Processing</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Direct uploads are analyzed in memory. Signed uploads use private storage and are deleted after consumption; abandoned uploads have best-effort cleanup after 24 hours.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/60 text-emerald-400 mb-4">
                 <Scale className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Section 94 BNSS Modernization</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                CrPC Section 91 has been superseded by Section 94 of Bharatiya Nagarik Suraksha Sanhita (BNSS),
-                2023. VeriSight automatically populates legally valid summons notices with verified transaction hashes.
-              </p>
+              <h3 className="text-base font-bold text-white">Technical Review Reports</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Reports summarize measurements for human review. The prototype does not issue legal notices or certify evidentiary admissibility.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-950/60 text-indigo-400 mb-4">
                 <FileCheck2 className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Chain of Custody SHA-256</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Every forensic report logs the cryptographic SHA-256 hash, pixel dimensions, DPI, and
-                color space of the ingested screenshot, preserving evidentiary integrity for court submission.
-              </p>
+              <h3 className="text-base font-bold text-white">Uploaded File SHA-256</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">SHA-256 identifies the uploaded bytes. The hash does not prove capture origin, payment settlement, or a complete chain of custody.</p>
             </div>
           </div>
         </div>
@@ -789,11 +694,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
                 <span>Can VeriSight prove who committed the forgery?</span>
               </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                No. VeriSight provides technical, mathematical corroboration that an image has been altered
-                (such as spliced numbers, font baseline shifts, or double-compression boundaries). It cannot identify
-                the individual behind the keyboard. Formal attribution requires IP logs, ISP data, or device seizure.
-              </p>
+              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">No. The system cannot establish who created or changed a screenshot, and its review cues do not prove that an edit occurred.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
@@ -801,23 +702,15 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
                 <span>Why does WhatsApp compression make forensics difficult?</span>
               </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                When a screenshot is sent through WhatsApp, it is recompressed with 4:2:0 chroma subsampling
-                and a lower JPEG quality factor (typically Q=75–77), stripping EXIF metadata. VeriSight accounts
-                for this by checking high-frequency wavelet subbands and geometric font baselines that survive recompression.
-              </p>
+              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">Lossy encoding can remove useful detail and create residual patterns. The simulator uses a fixed JPEG transform; it is not a verified reproduction of any current messaging app.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>What is Section 94 of BNSS, 2023?</span>
+                <span>Does VeriSight issue legal notices?</span>
               </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                Under the new criminal laws of India enacted in 2023, Section 94 of the Bharatiya Nagarik Suraksha
-                Sanhita (BNSS) replaces the former Section 91 of the Code of Criminal Procedure (CrPC). It empowers
-                investigating police officers to issue formal summons for the production of documents or electronic records.
-              </p>
+              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">No. The printable report is a technical review aid. Legal notice generation is not implemented in this analyzer.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
@@ -825,11 +718,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
                 <span>Does VeriSight connect to NPCI or bank servers?</span>
               </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                No. VeriSight operates exclusively as a digital media forensics platform. It analyzes the pixel structure
-                and metadata of screenshots. For confirmation of account balances or ledger credits, investigators should
-                serve Section 94 BNSS notices directly on the relevant banks or payment aggregators.
-              </p>
+              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">No. Confirm payment status through the payment provider or bank. Screenshot pixels and QR payloads cannot verify settlement.</p>
             </div>
           </div>
         </div>
@@ -842,7 +731,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             <ShieldCheck className="h-4 w-4 text-sky-400" />
             <span className="font-semibold text-slate-400">VERISIGHT PRO FORENSIC SUITE</span>
             <span>•</span>
-            <span>v1.2.1-calibrated</span>
+            <span>v1.0 · heuristic</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -867,7 +756,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
           </div>
 
           <div>
-            <span>Section 94 BNSS Compliant</span>
+            <span>Heuristic review prototype</span>
           </div>
         </footer>
       </div>

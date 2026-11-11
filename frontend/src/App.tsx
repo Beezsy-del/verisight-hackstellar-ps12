@@ -83,8 +83,14 @@ const MainProductApplication: React.FC = () => {
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
   const [isSection91ModalOpen, setIsSection91ModalOpen] = useState<boolean>(false);
 
+  const requestVersion = useRef(0);
+  const sourceFile = useRef<File | null>(null);
+
   // Handle selecting a golden demo sample
   const handleSelectSample = useCallback(async (sampleId: string) => {
+    const version = ++requestVersion.current;
+    sourceFile.current = null;
+    setReport(null);
     setSelectedSampleId(sampleId);
     setSelectedLocus(null);
     setIsLoading(true);
@@ -92,14 +98,16 @@ const MainProductApplication: React.FC = () => {
 
     try {
       const res = await analyzeDemoSample(sampleId);
+      if (version !== requestVersion.current) return;
       setReport(res);
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setAppError(
         `Sample analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
       toast.error(`Analysis failed for ${sampleId}`);
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
   }, []);
 
@@ -245,6 +253,9 @@ const MainProductApplication: React.FC = () => {
 
   // Handle custom screenshot upload
   const handleFileUpload = async (file: File) => {
+    const version = ++requestVersion.current;
+    sourceFile.current = file;
+    setReport(null);
     setSelectedSampleId(null);
     setSelectedLocus(null);
     setIsLoading(true);
@@ -257,15 +268,17 @@ const MainProductApplication: React.FC = () => {
 
     try {
       const res = await analyzeUpload(file);
+      if (version !== requestVersion.current) return;
       setReport(res);
       toast.success(`Analyzed screenshot: ${file.name}`);
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setAppError(
         `Upload analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
       toast.error("Upload analysis failed");
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
   };
 
@@ -315,6 +328,7 @@ const MainProductApplication: React.FC = () => {
     if (!report) return;
     setIsWhatsAppModalOpen(true);
     setIsWhatsAppLoading(true);
+    setWhatsAppDat(null);
 
     try {
       const base64Data =
@@ -329,8 +343,17 @@ const MainProductApplication: React.FC = () => {
         report.original_image_b64.match(/^data:([^;]+);/)?.[1] || "image/png";
       const blob = new Blob([byteArray], { type: previewMime });
 
+      let simulationSource: File | Blob = sourceFile.current || blob;
+      if (selectedSampleId) {
+        const sample = demoSamples.find(item => item.id === selectedSampleId);
+        if (sample) {
+          const response = await fetch(sample.url);
+          if (!response.ok) throw new Error("Original sample could not be loaded.");
+          simulationSource = await response.blob();
+        }
+      }
       const simRes = await simulateWhatsApp(
-        blob,
+        simulationSource,
         report.filename || "screenshot.png"
       );
       setWhatsAppDat(simRes);
@@ -347,6 +370,10 @@ const MainProductApplication: React.FC = () => {
 
   // Handle stage judge live mobile upload arrival
   const handleMobileUploadReceived = (newReport: ForensicAnalysisReport) => {
+    ++requestVersion.current;
+    sourceFile.current = null;
+    setIsLoading(false);
+    setAppError(null);
     setSelectedSampleId(null);
     setSelectedLocus(null);
     setReport(newReport);
@@ -394,7 +421,7 @@ const MainProductApplication: React.FC = () => {
               onOpenWhatsAppModal={handleTriggerWhatsAppSimulation}
               onOpenMobileModal={() => setIsMobileModalOpen(true)}
               onOpenReportModal={() => setIsReportModalOpen(true)}
-              onOpenSection91Modal={() => setIsSection91ModalOpen(true)}
+              onOpenSection91Modal={report?.section91_notice ? () => setIsSection91ModalOpen(true) : undefined}
               onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
               isAdvancedMode={isAdvancedMode}
               onToggleAdvancedMode={() => setIsAdvancedMode((prev) => !prev)}
@@ -447,7 +474,7 @@ const MainProductApplication: React.FC = () => {
                 onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
                 isAdvancedMode={isAdvancedMode}
                 onOpenReport={() => setIsReportModalOpen(true)}
-                onOpenSection91={() => setIsSection91ModalOpen(true)}
+                onOpenSection91={report?.section91_notice ? () => setIsSection91ModalOpen(true) : undefined}
               />
             </main>
           </AmbientThreatBackground>
@@ -482,7 +509,7 @@ const MainProductApplication: React.FC = () => {
         onClose={() => setIsWhatsAppModalOpen(false)}
         simulationData={whatsAppData}
         isLoading={isWhatsAppLoading}
-        onApplyLaunderedImage={(newReport) => setReport(newReport)}
+        onApplyLaunderedImage={(newReport) => { sourceFile.current = null; setSelectedSampleId(null); setReport(newReport); }}
       />
 
       <MobileUploadModal

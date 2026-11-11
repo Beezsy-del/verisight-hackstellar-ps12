@@ -1,3 +1,7 @@
+> Updated review: see [Localization data and release plan](LOCALIZATION_DATA_AND_RELEASE_PLAN.md)
+> for the current permission audit, proposed gates, and blocked training decision.
+> The existing two UI verdict labels remain unchanged.
+
 # VeriSight model readiness and training plan
 
 ## Current state

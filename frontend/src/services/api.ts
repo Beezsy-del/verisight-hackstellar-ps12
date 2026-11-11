@@ -30,6 +30,7 @@ export async function fetchHealth(): Promise<{
   status: string;
   service: string;
   database: "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED";
+  upload_mode?: "signed" | "direct";
 }> {
   const res = await fetchStartupData("/health");
   if (!res.ok) throw new Error("Health check failed");
@@ -58,6 +59,14 @@ export async function analyzeDemoSample(
 export async function analyzeUpload(
   file: File,
 ): Promise<ForensicAnalysisReport> {
+  if (file.size > 20 * 1024 * 1024) throw new Error("Choose an image smaller than 20 MB.");
+  const health = await fetchHealth();
+  if (health.upload_mode === "signed" && file.size > 4 * 1024 * 1024) {
+    const { session_id } = await uploadFileToPrivateStorage(file);
+    const result = await fetch(`${API_BASE}/analyze-upload-session/${session_id}`, { method: "POST" });
+    if (!result.ok) throw await responseError(result, "Screenshot analysis failed.");
+    return result.json();
+  }
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${API_BASE}/analyze`, {
@@ -151,7 +160,7 @@ export async function fetchLatestMobileUpload(
 ): Promise<ForensicAnalysisReport | null> {
   const query = new URLSearchParams({ session_id: sessionId });
   const res = await fetch(`${API_BASE}/latest-mobile-upload?${query}`);
-  if (!res.ok) return null;
+  if (!res.ok) throw await responseError(res, "Mobile handoff is unavailable.");
   const data = await res.json();
   return data.report || null;
 }
@@ -160,6 +169,14 @@ export async function uploadMobile(
   file: File,
   sessionId: string,
 ): Promise<void> {
+  const health = await fetchHealth();
+  if (health.upload_mode === "direct") {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch(`${API_BASE}/mobile-upload?session_id=${encodeURIComponent(sessionId)}`, { method: "POST", body });
+    if (!res.ok) throw await responseError(res, "Mobile upload failed.");
+    return;
+  }
   await uploadFileToPrivateStorage(file, sessionId);
 }
 

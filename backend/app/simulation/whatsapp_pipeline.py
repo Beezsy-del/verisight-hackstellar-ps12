@@ -21,10 +21,8 @@ def run_whatsapp_simulation(
     orig_size = len(image_bytes)
 
     # Decode, resize to 1600px maximum and JPEG re-encode (OpenCV uses 4:2:0 by default).
-    np_orig = np.frombuffer(image_bytes, np.uint8)
-    orig_bgr = cv2.imdecode(np_orig, cv2.IMREAD_COLOR)
-    if orig_bgr is None:
-        raise ValueError("Unsupported or corrupt image")
+    from app.services.image_validation import decode_image
+    orig_bgr = decode_image(image_bytes)
     h_orig, w_orig = orig_bgr.shape[:2]
     max_edge = max(w_orig, h_orig)
     if max_edge > 1600:
@@ -52,7 +50,7 @@ def run_whatsapp_simulation(
         orig_resized = orig_bgr
 
     diff = cv2.absdiff(orig_resized, sim_bgr)
-    diff_amplified = np.clip(diff * 12, 0, 255).astype(np.uint8)
+    diff_amplified = np.clip(diff.astype(np.uint16) * 12, 0, 255).astype(np.uint8)
     diff_colormap = cv2.applyColorMap(cv2.cvtColor(diff_amplified, cv2.COLOR_BGR2GRAY), cv2.COLORMAP_JET)
 
     _, diff_png = cv2.imencode('.png', diff_colormap)

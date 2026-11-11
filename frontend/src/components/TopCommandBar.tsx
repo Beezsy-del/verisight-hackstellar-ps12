@@ -37,12 +37,12 @@ const SAMPLE_DETAILS: Record<
 > = {
   sample_1: {
     label: "Clean Synthetic UPI",
-    badge: "Authentic",
+    badge: "Synthetic",
     color: "emerald",
     desc: "Clean baseline reference receipt",
   },
   sample_2: {
-    label: "Spliced ₹95,000 Payout",
+    label: "Synthetic ₹95,250 Edit",
     badge: "Amount Edit",
     color: "rose",
     desc: "Digital text insertion & font drift",

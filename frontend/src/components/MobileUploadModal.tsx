@@ -10,7 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { ForensicAnalysisReport } from "../types/forensic";
-import { fetchLatestMobileUpload } from "../services/api";
+import { fetchLatestMobileUpload, fetchNetworkInfo } from "../services/api";
 
 function createSessionId(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -33,7 +33,17 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
   onClose,
   onMobileUploadReceived,
 }) => {
-  const [sessionId] = useState(createSessionId);
+  const [sessionId, setSessionId] = useState(createSessionId);
+  const [mobileOrigin, setMobileOrigin] = useState(window.location.origin + "/");
+  const [pollError, setPollError] = useState("");
+  useEffect(() => {
+    if (!isOpen) return;
+    setSessionId(createSessionId());
+    setPollError("");
+    let active = true;
+    fetchNetworkInfo().then(info => { if (active) setMobileOrigin(info.mobile_upload_url); }).catch(() => {});
+    return () => { active = false; };
+  }, [isOpen]);
   const [copied, setCopied] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(true);
 
@@ -61,7 +71,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
           onClose();
         }
       } catch (e) {
-        console.error("Mobile upload polling failed:", e);
+        setPollError("Mobile handoff is unavailable. Check the server connection.");
       } finally {
         inFlight = false;
       }
@@ -72,13 +82,13 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  const mobileLink = new URL(window.location.href);
+  const mobileLink = new URL(mobileOrigin);
   mobileLink.searchParams.set("mode", "mobile");
   mobileLink.searchParams.set("session_id", sessionId);
   const mobileUrl = mobileLink.toString();
 
   const copyUrl = () => {
-    navigator.clipboard.writeText(mobileUrl);
+    navigator.clipboard?.writeText(mobileUrl).catch(() => setPollError("Copy the displayed link manually."));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -130,7 +140,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
           {/* Pulse Status */}
           <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1.5 rounded-full">
             <Radio className="w-3.5 h-3.5 animate-pulse" />
-            <span>LISTENING FOR STAGE JUDGE UPLOAD...</span>
+            <span role="status">{pollError || "LISTENING FOR MOBILE UPLOAD..."}</span>
           </div>
 
           {/* Direct URL */}

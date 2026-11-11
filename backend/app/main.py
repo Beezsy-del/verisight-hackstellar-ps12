@@ -13,7 +13,8 @@ if str(ROOT_DIR) not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from app.services.image_validation import InvalidImage, ImageTooLarge
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
@@ -41,6 +42,11 @@ app = FastAPI(
     description="Multi-layer screenshot forensic review using heuristic image cues",
     lifespan=lifespan
 )
+
+@app.exception_handler(InvalidImage)
+async def invalid_image_handler(request, exc):
+    return JSONResponse(status_code=413 if isinstance(exc, ImageTooLarge) else 422,
+                        content={"detail": str(exc)})
 
 # CORS middleware
 app.add_middleware(

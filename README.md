@@ -82,7 +82,7 @@ Five synthetic, watermarked samples are bundled for instant demonstration:
 
 | ID | Sample | Expected Verdict | Key Signals |
 |---|---|---|---|
-| `sample_1` | Clean Synthetic Payment UI (₹1,250) | `INCONCLUSIVE` | Baseline case — not a verified authentic transaction |
+| `sample_1` | Clean Synthetic Payment UI (₹1,250) | `REVIEW_REQUIRED` | Clean pixels, but OCR reads its not-a-real-transaction watermark |
 | `sample_2` | Synthetic Edited Amount (₹95,250) | `REVIEW_REQUIRED` | Known altered fixture; current signals are heuristic and do not establish that an arbitrary edit will be found |
 | `sample_3` | Synthetic Metadata Conflict Fixture | `REVIEW_REQUIRED` | Embedded metadata clock and reference-format cues; score can be high without a localized overlap |
 | `sample_4` | Synthetic JPEG Re-encode | `REVIEW_REQUIRED` | Re-encoded fixture; app/source cannot be identified from the image profile |
@@ -418,3 +418,27 @@ verisight-hackstellar-ps12/
 ---
 
 > **HackStellar PS-12** · Built for rapid forensic triage of digital payment screenshots in a hackathon context. Not a production-certified fraud detection product.
+
+### Visible receipt text checks
+
+The local pipeline now runs RapidOCR/ONNX alongside component geometry. It flags
+high-confidence, whole-line fake/demo/non-real or failed/pending payment
+statements. OCR failure or unreadable text cannot silently yield a favorable
+result. These checks do not validate plausible-looking fabricated receipts or
+confirm payment settlement. The two UI result labels remain Likely misleading
+and Likely accurate. See [the reproduction and scope](docs/receipt-scanning-verification.md).
+
+On headless hosts, install `opencv-python-headless==4.10.0.84` last with
+`--force-reinstall --no-deps` after installing requirements; RapidOCR also declares
+a GUI OpenCV dependency. Vercel installation and CI include this step.
+
+### Localization training and release gate
+
+The current localization-model release is **blocked**: no suitable screenshot
+corpus has documented intended-use permission and no independent locked-test
+evaluation exists. No localization model has been trained or deployed.
+See [the dataset permission audit, collection plan, and release protocol](docs/LOCALIZATION_DATA_AND_RELEASE_PLAN.md).
+`/api/model/status` and `/api/model/evaluation` expose this readiness state;
+metrics, model version, threshold, and calibrated confidence remain unavailable.
+Manifest provenance checks are in `backend/app/evaluation/data_audit.py`; they
+do not certify licensing or discover image duplicates by themselves.

@@ -76,3 +76,13 @@
     border: none !important;
   }
 }
+
+@media print {
+  body:has(.forensic-print-root) * { visibility: hidden; }
+  body:has(.forensic-print-root), body:has(.forensic-print-root) #root,
+  body:has(.forensic-print-root) #root > div { height: auto !important; overflow: visible !important; }
+  .forensic-print-root, .forensic-print-root * { visibility: visible !important; }
+  .forensic-print-root { position: absolute !important; inset: 0 !important; display: block !important; overflow: visible !important; background: white !important; }
+  .forensic-print-root > div { display: block !important; max-height: none !important; overflow: visible !important; }
+  .forensic-print-root .no-print { display: none !important; }
+}

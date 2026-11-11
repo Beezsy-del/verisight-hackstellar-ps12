@@ -58,7 +58,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
   const caseId = `VS-CASE-${file_sha256.slice(0, 8).toUpperCase()}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="forensic-print-root fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-[#0b1120] border border-[#1e293b] rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden print:m-0 print:p-0 print:border-none print:shadow-none print:max-h-full print:w-full print:bg-white print:text-black">
         {/* Top Modal Controls (Hidden in Print) */}
         <div className="h-14 px-6 border-b border-[#1e293b] bg-[#070b14] flex items-center justify-between no-print">
@@ -95,7 +95,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                   VERISIGHT FORENSIC AUDIT DOSSIER
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800 print:border-black print:bg-gray-100 print:text-black">
-                  OFFICIAL AUDIT REPORT
+                  HEURISTIC REVIEW REPORT
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8] print:text-gray-600 mt-1">
@@ -152,7 +152,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 Evidence Custody Hashes
               </span>
               <div
-                className="truncate text-[#94a3b8] print:text-gray-700"
+                className="truncate print:whitespace-normal print:break-all text-[#94a3b8] print:text-gray-700"
                 title={file_sha256}
               >
                 SHA-256: <strong>{file_sha256}</strong>

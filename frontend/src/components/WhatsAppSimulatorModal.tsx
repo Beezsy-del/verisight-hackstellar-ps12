@@ -65,8 +65,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 Educational WhatsApp Media Laundering Simulator
               </h3>
               <p className="text-[11px] text-[#64748b]">
-                Inspects metadata stripping (EXIF/ICC) and demonstrates forensic
-                survival of typographic lasers & wavelets
+                Fixed JPEG transform for comparing review cues before and after recompression
               </p>
             </div>
           </div>

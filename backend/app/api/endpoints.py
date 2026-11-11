@@ -6,11 +6,15 @@ from pathlib import Path
 from uuid import UUID, uuid4
 from urllib.parse import quote, urlsplit
 from typing import Any
+from time import monotonic
+from starlette.concurrency import run_in_threadpool
+from app.services.image_validation import decode_image, InvalidImage, ImageTooLarge
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
 from app.core.config import settings
+from app.evaluation.readiness import release_readiness, evidence_sources
 from app.core.schemas import (
     DemoSampleMeta,
     ForensicAnalysisReport,
@@ -27,7 +31,13 @@ from app.services.mobile_upload_store import (
 router = APIRouter()
 
 # In-memory storage for latest mobile upload (for stage judge real-time sync)
-_LATEST_MOBILE_UPLOAD: dict[str, Any] | None = None
+_MOBILE_UPLOADS: dict[str, dict[str, Any]] = {}
+
+async def read_image_upload(file: UploadFile) -> bytes:
+    content = await file.read(settings.MAX_FILE_SIZE_BYTES + 1)
+    await run_in_threadpool(decode_image, content)
+    return content
+
 
 
 class UploadSessionRequest(BaseModel):
@@ -93,6 +103,7 @@ async def health_check():
     return {
         "status": "HEALTHY",
         "database": await database_status(),
+        "upload_mode": "signed" if os.getenv("VERCEL") else "direct",
         "service": settings.APP_NAME,
         "version": settings.VERSION,
         "active_layers": ["L1_Signal_Heuristics", "L2_Geometry_Heuristics", "L3_Metadata_QR", "L4_Evidence_Review"]
@@ -111,6 +122,8 @@ async def model_status():
         "promotion_status": "NO_TRAINED_MODEL",
         "available_models": [],
         "ml_environment_ready": False,
+        "release_gate": release_readiness(),
+        "evidence_sources": evidence_sources(),
         "message": "No trained or calibrated classifier is deployed. Results are review cues, not authenticity probabilities.",
     }
 
@@ -128,6 +141,9 @@ async def model_evaluation():
             "held_out_test_samples": 0,
         },
         "metrics": None,
+        "release_gate": release_readiness(),
+        "test_set_locked": False,
+        "baseline_comparison": None,
         "message": "No representative labeled dataset or held-out evaluation is configured. Accuracy, ROC-AUC, and calibrated confidence are unavailable.",
     }
 
@@ -162,6 +178,10 @@ async def get_network_info(request: Request):
         host = forwarded_host or request.headers.get("host", f"{local_ip}:5174")
         origin = f"{forwarded_proto}://{host}"
 
+    parsed_origin = urlsplit(origin)
+    if not os.getenv("VERCEL") and parsed_origin.hostname in {"localhost", "127.0.0.1", "::1"}:
+        port = parsed_origin.port or 8101
+        origin = f"http://{local_ip}:{port}"
     qr_url = f"{origin}/?mode=mobile"
 
     return {
@@ -180,7 +200,7 @@ async def get_demo_samples():
             filename="sample_1_clean_synthetic_ui.png",
             title="Sample 1 — Clean Synthetic Payment UI (₹1,250.00)",
             scenario="Synthetic clean baseline used to demonstrate low anomaly indicators; it is not a genuine bank or payment receipt.",
-            expected_verdict="INCONCLUSIVE",
+            expected_verdict="REVIEW_REQUIRED",
             target_score_range="Variable heuristic points",
             description="Clean synthetic fixture with no corroborated manipulation indicators. The result does not verify a real payment or origin.",
             tags=["Clean Baseline", "Synthetic", "UPI-style", "Aligned"],
@@ -236,17 +256,15 @@ async def get_demo_samples():
 @router.post("/analyze", response_model=ForensicAnalysisReport)
 async def analyze_upload(file: UploadFile = File(...)):
     """Upload and run full 4-layer forensic investigation on any screenshot."""
-    content = await file.read()
-    if len(content) > settings.MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
+    content = await read_image_upload(file)
     
     try:
         from app.services.forensic.pipeline import analyze_screenshot
-        report = analyze_screenshot(content, filename=file.filename or "upload.png")
+        report = await run_in_threadpool(analyze_screenshot, content, filename=file.filename or "upload.png")
         await save_case(report, "upload")
         return report
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Forensic investigation failed: {e!s}")
+        raise HTTPException(status_code=500, detail="Screenshot analysis failed. Please try another image.")
 
 @router.post("/analyze-sample", response_model=ForensicAnalysisReport)
 async def analyze_sample(background_tasks: BackgroundTasks, sample_id: str = Form(...)):
@@ -279,7 +297,7 @@ async def execute_sample_analysis(
         generate_all_samples()
 
     from app.services.forensic.pipeline import analyze_screenshot
-    report = _cached_demo_analysis(filename, sample_path.stat().st_mtime_ns, str(sample_path))
+    report = await run_in_threadpool(_cached_demo_analysis, filename, sample_path.stat().st_mtime_ns, str(sample_path))
     report = report.model_copy(update={"timestamp": datetime.now().isoformat()})
     if background_tasks is not None:
         background_tasks.add_task(save_case, report, "synthetic_sample")
@@ -297,13 +315,13 @@ def _cached_demo_analysis(filename: str, modified_ns: int, path: str) -> Forensi
 @router.post("/simulate-whatsapp", response_model=WhatsAppSimulationResponse)
 async def simulate_whatsapp(file: UploadFile = File(...)):
     """Simulates WhatsApp laundering on an uploaded image and returns before vs after comparison."""
-    content = await file.read()
+    content = await read_image_upload(file)
     try:
         from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
-        sim_response = run_whatsapp_simulation(content, filename=file.filename or "image.png")
+        sim_response = await run_in_threadpool(run_whatsapp_simulation, content, filename=file.filename or "image.png")
         return sim_response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Simulation failed: {e!s}")
+        raise HTTPException(status_code=500, detail="Image simulation failed. Please try another image.")
 
 @router.post("/mobile-upload")
 async def mobile_upload(request: Request, file: UploadFile = File(...)):
@@ -312,10 +330,7 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
     Pairs the upload to the desktop session; Vercel uses private Supabase Storage
     because serverless instances do not share in-memory state.
     """
-    global _LATEST_MOBILE_UPLOAD
-    content = await file.read()
-    if len(content) > settings.MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
+    content = await read_image_upload(file)
     session_text = request.query_params.get("session_id")
     session_id: UUID | None = None
     if session_text:
@@ -323,7 +338,7 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
             session_id = UUID(session_text)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail="Invalid mobile session.") from exc
-    if os.getenv("VERCEL") and session_id is None:
+    if session_id is None:
         raise HTTPException(status_code=400, detail="Open this upload page from the desktop QR code.")
 
     # Local development keeps the existing in-memory handoff. Production
@@ -335,9 +350,15 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
         return {"status": "SUCCESS", "message": "Screenshot queued for the paired desktop workbench."}
 
     from app.services.forensic.pipeline import analyze_screenshot
-    report = analyze_screenshot(content, filename=file.filename or "mobile_upload.jpg")
+    report = await run_in_threadpool(analyze_screenshot, content, filename=file.filename or "mobile_upload.jpg")
 
-    _LATEST_MOBILE_UPLOAD = {
+    for key, item in list(_MOBILE_UPLOADS.items()):
+        if monotonic() - item["received_at"] > 600:
+            _MOBILE_UPLOADS.pop(key, None)
+    if len(_MOBILE_UPLOADS) >= 32:
+        _MOBILE_UPLOADS.pop(next(iter(_MOBILE_UPLOADS)))
+    _MOBILE_UPLOADS[str(session_id)] = {
+        "received_at": monotonic(),
         "session_id": str(session_id) if session_id else None,
         "filename": file.filename or "mobile_upload.jpg",
         "timestamp": report.timestamp,
@@ -352,7 +373,6 @@ async def get_latest_mobile_upload(clear: bool = False, session_id: UUID | None 
     """
     Desktop workbench polling endpoint. Returns the upload paired to this session.
     """
-    global _LATEST_MOBILE_UPLOAD
     if os.getenv("VERCEL"):
         if session_id is None:
             return {"report": None}
@@ -362,9 +382,9 @@ async def get_latest_mobile_upload(clear: bool = False, session_id: UUID | None 
             raise HTTPException(status_code=500, detail="Could not retrieve the mobile upload.") from e
         return {"report": report}
 
-    data = _LATEST_MOBILE_UPLOAD
-    if session_id and data and data.get("session_id") != str(session_id):
+    if session_id is None:
+        return {"report": None}
+    data = _MOBILE_UPLOADS.pop(str(session_id), None)
+    if data and monotonic() - data["received_at"] > 600:
         data = None
-    if clear:
-        _LATEST_MOBILE_UPLOAD = None
     return {"report": data.get("report") if data else None}

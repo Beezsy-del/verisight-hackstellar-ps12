@@ -66,7 +66,7 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
           </style>
         </head>
         <body>
-          <pre>${noticeText}</pre>
+          <pre>${noticeText.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char))}</pre>
           <script>window.onload = function() { window.print(); window.close(); }</script>
         </body>
       </html>

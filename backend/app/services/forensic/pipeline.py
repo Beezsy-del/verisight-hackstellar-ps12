@@ -49,10 +49,8 @@ def analyze_screenshot(
     timestamp_iso = datetime.now().isoformat()
 
     # 2. Decode Image
-    np_arr = np.frombuffer(image_bytes, np.uint8)
-    img_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-    if img_bgr is None:
-        raise ValueError("Could not decode image buffer. Unsupported format or corrupt payload.")
+    from app.services.image_validation import decode_image
+    img_bgr = decode_image(image_bytes)
 
     h, w = img_bgr.shape[:2]
 
@@ -206,6 +204,27 @@ def analyze_screenshot(
         layer4=layer4_result,
         is_whatsapp=is_whatsapp
     )
+
+    # Read visible text independently of the component boxes used for geometry.
+    from app.services.forensic.typography.receipt_text import inspect_receipt_text
+    text_findings, text_status = inspect_receipt_text(img_bgr)
+    layer3_result.details["receipt_text"] = text_status
+    if text_findings:
+        findings = text_findings + findings
+        all_boxes.extend(f.bounding_box for f in text_findings if f.bounding_box)
+        overall_score = max(overall_score, 55.0)
+        if verdict == "INCONCLUSIVE":
+            verdict = "REVIEW_REQUIRED"
+        findings = [f for f in findings if f.id != "f-inconclusive"]
+    elif text_status["status"] != "AVAILABLE" and verdict == "INCONCLUSIVE":
+        # An unavailable scanner must not silently turn into a favorable result.
+        from app.core.schemas import ForensicFinding
+        verdict = "REVIEW_REQUIRED"
+        findings = [f for f in findings if f.id != "f-inconclusive"]
+        findings.append(ForensicFinding(id="f-text-coverage", layer=3, severity="LOW",
+            title="Receipt text could not be assessed",
+            description="No reliable text assessment is available. The warning reflects incomplete coverage, not detected forgery.",
+            metric_name="Text assessment", metric_value=text_status["status"]))
 
     # 9. Send lossless WebP viewer assets to reduce the report payload. The
     # original uploaded bytes above remain the source for all forensic checks.

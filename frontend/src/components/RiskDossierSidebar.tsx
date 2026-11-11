@@ -256,9 +256,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
             <p className="mt-2 text-[11px] leading-relaxed text-slate-300 font-sans">
               {isReviewRequired
-                ? "Multiple high-confidence forgery signals detected across font geometry and pixel compression."
-                : "Signals consistent with native screenshot capture; no digital splicing identified."}
+                ? "One or more configured review cues crossed a threshold. This does not establish forgery."
+                : "No configured strong cue crossed its threshold. Authenticity remains unknown."}
             </p>
+            <p className="mt-2 text-[11px] text-slate-400">Screenshot analysis does not verify payment settlement. That requires an authorized bank or PSP transaction-status integration.</p>
           </div>
         </motion.div>
 
