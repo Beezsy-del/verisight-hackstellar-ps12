@@ -1,3 +1,5 @@
+import { loadSimulationSource } from "./services/simulationSource";
+import { ReviewLimitations } from "./components/ReviewLimitations";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { NavigationHeader, AppRoute } from "./components/NavigationHeader";
 import { ProductOverview } from "./components/ProductOverview";
@@ -331,27 +333,12 @@ const MainProductApplication: React.FC = () => {
     setWhatsAppDat(null);
 
     try {
-      const base64Data =
-        report.original_image_b64.split(",")[1] || report.original_image_b64;
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const previewMime =
-        report.original_image_b64.match(/^data:([^;]+);/)?.[1] || "image/png";
-      const blob = new Blob([byteArray], { type: previewMime });
-
-      let simulationSource: File | Blob = sourceFile.current || blob;
-      if (selectedSampleId) {
-        const sample = demoSamples.find(item => item.id === selectedSampleId);
-        if (sample) {
-          const response = await fetch(sample.url);
-          if (!response.ok) throw new Error("Original sample could not be loaded.");
-          simulationSource = await response.blob();
-        }
-      }
+      const sample = selectedSampleId
+        ? demoSamples.find(item => item.id === selectedSampleId)
+        : undefined;
+      const simulationSource = await loadSimulationSource(
+        sourceFile.current, sample?.url, report.original_image_b64,
+      );
       const simRes = await simulateWhatsApp(
         simulationSource,
         report.filename || "screenshot.png"
@@ -411,6 +398,7 @@ const MainProductApplication: React.FC = () => {
         {/* Experience B: Forensic Workbench */}
         {currentRoute === "/workbench" && (
           <AmbientThreatBackground threatScore={report?.overall_tamper_score || 0}>
+            <div className="shrink-0 px-2 py-1"><ReviewLimitations /></div>
             {/* Top Workbench Command Bar */}
             <TopCommandBar
               databaseStatus={databaseStatus}

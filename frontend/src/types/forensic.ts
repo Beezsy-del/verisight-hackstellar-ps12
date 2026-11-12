@@ -5,7 +5,7 @@ export interface BoundingBox {
   height: number;
   points?: number[][];
   label: string;
-  confidence: number;
+  confidence: number | null;
   layer: number;
   anomaly_type: string;
   details?: Record<string, any>;
@@ -17,7 +17,7 @@ export interface BaselineLaser {
   slope: number;
   tokens_count: number;
   delta_y_max: number;
-  is_tampered: boolean;
+  is_alignment_outlier: boolean;
   status: "ALIGNED_CYAN" | "CRITICAL_RED";
   callout_text?: string;
   token_indices: number[];
@@ -80,9 +80,8 @@ export interface Layer4SemanticResult {
 }
 
 export interface CrossLayerSynergy {
-  synergy_multiplier_applied: boolean;
-  multiplier_factor: number;
-  primary_forgery_locus?: BoundingBox;
+  region_overlap_found: boolean;
+  primary_review_locus?: BoundingBox | null;
   synergy_explanation: string;
 }
 
@@ -115,7 +114,20 @@ export interface SyndicateIntelligence {
   recommended_action: string;
 }
 
+export interface AnalysisGate {
+  state: "PASS" | "WARNING" | "BLOCK";
+  processing_status: "COMPLETE" | "INCOMPLETE" | "FAILED";
+  policy_version: string;
+  reasons: { code: string; state: "PASS" | "WARNING" | "BLOCK"; message: string; evidence_ids: string[] }[];
+  allowed_actions: { view_report: boolean; automated_approval: false };
+  settlement_verified: false;
+}
+
+export type PersistenceStatus = "DISABLED" | "NOT_CONFIGURED" | "FAILED" | "SAVED" | "NOT_REQUESTED";
+
 export interface ForensicAnalysisReport {
+  persistence_status?: PersistenceStatus;
+  analysis_gate?: AnalysisGate;
   file_sha256: string;
   filename?: string;
   timestamp: string;

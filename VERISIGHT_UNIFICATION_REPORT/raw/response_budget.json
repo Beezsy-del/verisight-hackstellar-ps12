@@ -1,0 +1,14 @@
+{
+  "input_bytes": 3694273,
+  "status": 413,
+  "response_bytes": 217,
+  "response": {
+    "detail": "Analysis previews exceed the response budget. Use a smaller image; no usable assessment is being returned.",
+    "processing_status": "FAILED",
+    "analysis_gate": {
+      "state": "BLOCK",
+      "automated_approval": false
+    }
+  },
+  "seconds": 2.086910332989646
+}

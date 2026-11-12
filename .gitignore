@@ -20,3 +20,4 @@ supabase/.temp/
 .playwright-cli/
 output/
 reports/
+VERISIGHT_UNIFICATION_REPORT/runtime/

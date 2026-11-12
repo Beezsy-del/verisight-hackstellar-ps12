@@ -1,0 +1,27 @@
+........................................................................ [ 58%]
+..............................................F.....                     [100%]
+=================================== FAILURES ===================================
+____________ test_mobile_poll_cannot_read_or_clear_another_session _____________
+
+    def test_mobile_poll_cannot_read_or_clear_another_session():
+        from app.api import endpoints
+        a, b = str(uuid4()), str(uuid4())
+        from time import monotonic
+        endpoints._MOBILE_UPLOADS[a] = {'report': {'filename': 'a.png'}, 'received_at': monotonic()}
+        endpoints._MOBILE_UPLOADS[b] = {'report': {'filename': 'b.png'}, 'received_at': monotonic()}
+        assert client.get('/api/latest-mobile-upload?clear=true').json()['report'] is None
+        assert client.get(f'/api/latest-mobile-upload?session_id={uuid4()}&clear=true').json()['report'] is None
+>       assert client.get(f'/api/latest-mobile-upload?session_id={a}').json()['report']['filename'] == 'a.png'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'report'
+
+backend/tests/test_workflow_regressions.py:53: KeyError
+=============================== warnings summary ===============================
+../COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37
+  /Users/shreeshaks/Documents/COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_workflow_regressions.py::test_mobile_poll_cannot_read_or_clear_another_session
+1 failed, 123 passed, 1 warning in 46.04s

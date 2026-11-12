@@ -24,8 +24,8 @@ def decode_image(content: bytes):
             if image.format not in {"PNG", "JPEG", "WEBP", "BMP"}:
                 raise InvalidImage("Use a PNG, JPG, WebP, or BMP screenshot.")
             w, h = image.size
-            if w * h > 12_000_000 or max(w, h) > 8192:
-                raise ImageTooLarge("Use an image up to 12 megapixels and 8192 pixels per side.")
+            if w * h > 2_000_000 or max(w, h) > 3200:
+                raise ImageTooLarge("Use an image up to 2 megapixels and 3200 pixels per side.")
             if min(w, h) < 16:
                 raise InvalidImage("The image must be at least 16 pixels on each side.")
             if getattr(image, "n_frames", 1) != 1:

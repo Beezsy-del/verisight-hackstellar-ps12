@@ -205,6 +205,8 @@ def analyze_screenshot(
         is_whatsapp=is_whatsapp
     )
 
+    visual_tamper_score = overall_score
+
     # Read visible text independently of the component boxes used for geometry.
     from app.services.forensic.typography.receipt_text import inspect_receipt_text
     text_findings, text_status = inspect_receipt_text(img_bgr)
@@ -231,7 +233,24 @@ def analyze_screenshot(
     _, orig_webp = cv2.imencode('.webp', img_bgr, [cv2.IMWRITE_WEBP_QUALITY, 101])
     orig_b64 = f"data:image/webp;base64,{base64.b64encode(orig_webp.tobytes()).decode('utf-8')}"
 
+    from app.evaluation.gates import evaluate_analysis_gate
+    analysis_gate = evaluate_analysis_gate(score=overall_score, verdict=verdict,
+        findings=findings, ocr_status=text_status.get("status"), image_width=w, image_height=h)
+    # An incomplete assessment never inherits a favorable presentation.
+    if analysis_gate.state == "BLOCK" and verdict == "INCONCLUSIVE":
+        verdict = "REVIEW_REQUIRED"
+
     return ForensicAnalysisReport(
+        analysis_gate=analysis_gate,
+        visual_tamper_score=visual_tamper_score,
+        evidence_sources={
+            "visual": {"status": "COMPLETE", "method": "uncalibrated_pixel_geometry_cues", "score": visual_tamper_score},
+            "ocr": text_status,
+            "metadata": {"status": "UNTRUSTED", "method": "container_fields"},
+            "qr": {"status": "DECODE_ONLY", "destination_verified": False},
+            "model": {"status": "NOT_DEPLOYED", "calibrated_confidence": None},
+            "payment_status": {"status": "NOT_INTEGRATED", "settlement_verified": False},
+        },
         file_sha256=sha256_hash,
         filename=filename,
         timestamp=timestamp_iso,

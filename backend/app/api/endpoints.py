@@ -21,6 +21,8 @@ from app.core.schemas import (
     WhatsAppSimulationResponse,
 )
 from app.services.supabase_store import database_status, save_case
+from app.services.artifacts import delivery_report, store
+from fastapi.responses import Response
 from app.services.mobile_upload_store import (
     ALLOWED_UPLOAD_TYPES,
     consume_mobile_upload,
@@ -88,7 +90,7 @@ async def analyze_upload_session(session_id: UUID):
         report = await consume_mobile_upload(session_id)
         if report is None:
             raise HTTPException(status_code=404, detail="Screenshot upload was not found or was already used.")
-        return report
+        return delivery_report(report)
     except HTTPException:
         raise
     except Exception as exc:
@@ -262,7 +264,7 @@ async def analyze_upload(file: UploadFile = File(...)):
         from app.services.forensic.pipeline import analyze_screenshot
         report = await run_in_threadpool(analyze_screenshot, content, filename=file.filename or "upload.png")
         await save_case(report, "upload")
-        return report
+        return delivery_report(report)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Screenshot analysis failed. Please try another image.")
 
@@ -299,11 +301,8 @@ async def execute_sample_analysis(
     from app.services.forensic.pipeline import analyze_screenshot
     report = await run_in_threadpool(_cached_demo_analysis, filename, sample_path.stat().st_mtime_ns, str(sample_path))
     report = report.model_copy(update={"timestamp": datetime.now().isoformat()})
-    if background_tasks is not None:
-        background_tasks.add_task(save_case, report, "synthetic_sample")
-    else:
-        await save_case(report, "synthetic_sample")
-    return report
+    await save_case(report, "synthetic_sample")
+    return delivery_report(report)
 
 
 @lru_cache(maxsize=5)
@@ -319,7 +318,7 @@ async def simulate_whatsapp(file: UploadFile = File(...)):
     try:
         from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
         sim_response = await run_in_threadpool(run_whatsapp_simulation, content, filename=file.filename or "image.png")
-        return sim_response
+        return delivery_report(sim_response)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Image simulation failed. Please try another image.")
 
@@ -357,16 +356,16 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
             _MOBILE_UPLOADS.pop(key, None)
     if len(_MOBILE_UPLOADS) >= 32:
         _MOBILE_UPLOADS.pop(next(iter(_MOBILE_UPLOADS)))
+    await save_case(report, "mobile_upload")
     _MOBILE_UPLOADS[str(session_id)] = {
         "received_at": monotonic(),
         "session_id": str(session_id) if session_id else None,
         "filename": file.filename or "mobile_upload.jpg",
         "timestamp": report.timestamp,
-        "report": report.model_dump()
+        "report": delivery_report(report).model_dump()
     }
-    await save_case(report, "mobile_upload")
 
-    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict}
+    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict, "analysis_gate": report.analysis_gate.model_dump()}
 
 @router.get("/latest-mobile-upload")
 async def get_latest_mobile_upload(clear: bool = False, session_id: UUID | None = None):
@@ -380,11 +379,33 @@ async def get_latest_mobile_upload(clear: bool = False, session_id: UUID | None 
             report = await consume_mobile_upload(session_id)
         except Exception as e:
             raise HTTPException(status_code=500, detail="Could not retrieve the mobile upload.") from e
-        return {"report": report}
+        return {"report": delivery_report(report)}
 
     if session_id is None:
         return {"report": None}
     data = _MOBILE_UPLOADS.pop(str(session_id), None)
     if data and monotonic() - data["received_at"] > 600:
         data = None
-    return {"report": data.get("report") if data else None}
+    return {"report": delivery_report(data.get("report")) if data else None}
+
+
+@router.get("/artifacts/{token}")
+def get_artifact(token: str):
+    artifact = store.get(token)
+    if artifact is None:
+        raise HTTPException(status_code=404, detail="Preview expired or unavailable. Run the analysis again.")
+    content, media_type = artifact
+    return Response(content, media_type=media_type, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+@router.get("/operating-envelope")
+async def operating_envelope():
+    return {
+        "status": "PRIVATE_DEVELOPMENT_PROTOTYPE", "validated_public_service": False,
+        "max_file_bytes": settings.MAX_FILE_SIZE_BYTES, "max_pixels": 2_000_000,
+        "max_side_pixels": 3200, "max_concurrent_analyses_per_process": 2,
+        "supported_workers": 1, "preview_ttl_seconds": 600,
+        "preview_store_budget_bytes": store.budget, "max_local_preview_bytes": 6_500_000,
+        "preview_delivery": "inline_bounded" if os.getenv("VERCEL") else "private_capability_urls",
+        "memory_limit_guaranteed": False, "real_world_accuracy": None,
+        "settlement_verification": "NOT_INTEGRATED",
+    }

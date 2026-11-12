@@ -1,0 +1,28 @@
+{
+  "A": {
+    "head": "347c7a7612c59e0e8be56274187deb53ab251165",
+    "branch": "feat/screenshot-analysis-release-gates",
+    "status": ""
+  },
+  "B": {
+    "head": "2260e5227ac34215e58bfe86974af2d9c4bbfa00",
+    "branch": "feature/scamshield-scaling-enhancements",
+    "status": ""
+  },
+  "reports": {
+    "EXECUTIVE_VERDICT": true,
+    "VERSION_A_AUDIT": true,
+    "VERSION_B_AUDIT": true,
+    "COMPONENT_SELECTION": true,
+    "UNIFIED_ARCHITECTURE": true,
+    "DETECTION_ENGINE": true,
+    "RELEASE_GATE_AUDIT": true,
+    "SCALABILITY_REPORT": true,
+    "SECURITY_AUDIT": true,
+    "BENCHMARK_RESULTS": true,
+    "TEST_RESULTS": true,
+    "MIGRATION_REPORT": true,
+    "KNOWN_LIMITATIONS": true,
+    "FINAL_COMPARATIVE_AUDIT": true
+  }
+}

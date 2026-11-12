@@ -1,0 +1,16 @@
+2260e5227ac34215e58bfe86974af2d9c4bbfa00 2026-11-11 19:13:14 +0530 VeriSight Architect feat(ui): complete VeriSight Pro 3-pillar product UI overhaul, landing page, and workbench experience
+b8dabfba088e0c53c191bd2f3ee8f2d8266a4a64 2026-11-11 02:58:26 +0530 VeriSight Architect fix(ml): repair feature parity, resolve runtime model bypass, and enforce experimental status
+81a6cf07c20526e844893def33e7be885113ac51 2026-11-11 02:12:30 +0530 VeriSight Architect feat(ml): integrate calibrated GBDT feature fusion, benchmark corpus, and Section 17 forensic reports
+5f1360d8c213694385e266a5fd6cc828e4018278 2026-11-11 02:11:16 +0530 VeriSight Architect revert(ui): restore production Vercel dark workbench UI and clean layout
+48edcbe58ed7616915630ce6518b7f1efd6f7f87 2026-11-11 01:26:39 +0530 VeriSight Architect feat(skills): setup and configure frontend-design, design-taste, shadcn, ui-ux-pro-max, web-design-guidelines, and emilkowalski animation skills
+11e9777b3fe2f80e8fd4c470e113306579ec3a33 2026-11-11 01:19:13 +0530 VeriSight Architect chore(skills): install and configure anthropics/skills@frontend-design
+35ed40e4e74ef3dab537247176cc65d13ed66a32 2026-11-11 00:41:11 +0530 VeriSight Architect feat(ui): eliminate header overcrowding, add dynamic risk-responsive theme (87% threshold), collapsible dossier, and React Bits / 21st.dev components
+c99ce9c36fe583ea7b6b89b4dd3051736f7753b6 2026-11-11 00:15:23 +0530 VeriSight Architect feat(forensics): transform to VeriSight PRO v1.0 with 5-stage lifecycle, categorized evidence viewer, progressive risk dossier, and Section 91 statutory notice
+82da44b3585c4f547525799c36c389b673fb6348 2026-11-10 23:35:58 +0530 VeriSight Architect revert(ui): restore production Vercel dark workbench UI and integrate Section 91 subpoena notice cleanly
+1f33718e7746fe28a4ed7b3aa3a6a20ada37dbc8 2026-11-10 23:12:11 +0530 VeriSight Architect feat(ui): add ScamShield syndicate entity resolution card and Section 91 Cyber Subpoena modal
+b69c14ef855d51a10522ee22b6fc58c4dc8be6e1 2026-11-10 22:37:47 +0530 VeriSight Architect feat: implement ScamShield AI syndicate intelligence, QR inspection, and async scaling optimizations
+84fd4703019623389b6ac8fe611ce77a896d9501 2026-11-10 19:55:18 +0530 VeriSight Architect fix(ui): eliminate duplicate view and action buttons, rebuild clean vector PDF dossier print output
+5ec445f6039eacc2d8bfa0e435ae4bdb575564dd 2026-11-10 19:38:02 +0530 VeriSight Architect feat(ui): implement custom earthy 5-color palette (sage, custard, beige, bronze, dusty-rose)
+9e513aee064512a172e5bea2341cc831662ff6d4 2026-11-10 19:31:51 +0530 VeriSight Architect feat(ui): migrate top navigation to Left Sidebar and integrate React Bits PillNav with smooth sliding animations
+da25c7bcb9ba699f70a9127a4722179138ab932c 2026-11-10 19:17:58 +0530 VeriSight Architect feat(ui): overhaul UI/UX with Watermelon UI design system, Bento Intelligence Dashboard, and refined spectral controls
+eb9445b0a09c073e4647d489b2b24b6fcceb85a0 2026-11-09 22:38:24 +0530 VeriSight Architect feat: complete production-grade VeriSight multi-layer screenshot forensics platform

@@ -46,8 +46,10 @@ def test_mobile_poll_cannot_read_or_clear_another_session():
     from app.api import endpoints
     a, b = str(uuid4()), str(uuid4())
     from time import monotonic
-    endpoints._MOBILE_UPLOADS[a] = {'report': {'filename': 'a.png'}, 'received_at': monotonic()}
-    endpoints._MOBILE_UPLOADS[b] = {'report': {'filename': 'b.png'}, 'received_at': monotonic()}
+    from app.core.schemas import AnalysisGate
+    gate = AnalysisGate(state='WARNING', processing_status='COMPLETE', allowed_actions={'view_report': True, 'automated_approval': False}).model_dump()
+    endpoints._MOBILE_UPLOADS[a] = {'report': {'filename': 'a.png', 'analysis_gate': gate}, 'received_at': monotonic()}
+    endpoints._MOBILE_UPLOADS[b] = {'report': {'filename': 'b.png', 'analysis_gate': gate}, 'received_at': monotonic()}
     assert client.get('/api/latest-mobile-upload?clear=true').json()['report'] is None
     assert client.get(f'/api/latest-mobile-upload?session_id={uuid4()}&clear=true').json()['report'] is None
     assert client.get(f'/api/latest-mobile-upload?session_id={a}').json()['report']['filename'] == 'a.png'

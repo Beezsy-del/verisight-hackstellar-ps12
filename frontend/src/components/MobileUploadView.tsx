@@ -1,3 +1,4 @@
+import { ReviewLimitations } from "./ReviewLimitations";
 import React, { useState, useRef } from "react";
 import {
   Camera,
@@ -96,6 +97,8 @@ export const MobileUploadView: React.FC = () => {
                 screen.
               </p>
             </div>
+
+            <ReviewLimitations />
 
             <input
               type="file"

@@ -72,9 +72,11 @@ def test_whatsapp_simulation_endpoint_returns_comparison():
 
 def test_production_mobile_upload_requires_paired_session(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.setenv("VERISIGHT_ACCESS_PASSWORD", "test-password")
     image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(
         "/api/mobile-upload",
+        auth=("verisight", "test-password"),
         files={"file": ("capture.png", image, "image/png")},
     )
     assert response.status_code == 400

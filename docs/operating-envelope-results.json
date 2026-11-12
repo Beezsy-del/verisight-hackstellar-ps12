@@ -1,0 +1,128 @@
+{
+  "synthetic_only": true,
+  "input_bytes": 3692522,
+  "dimensions": [
+    960,
+    1280
+  ],
+  "single": {
+    "status": 200,
+    "seconds": 2.0621,
+    "json_bytes": 5629,
+    "artifacts": [
+      {
+        "status": 200,
+        "bytes": 3686480
+      },
+      {
+        "status": 200,
+        "bytes": 164922
+      },
+      {
+        "status": 200,
+        "bytes": 829108
+      },
+      {
+        "status": 200,
+        "bytes": 3686480
+      }
+    ],
+    "gate": "BLOCK"
+  },
+  "maximum_2mp": {
+    "status": 200,
+    "seconds": 3.1021,
+    "json_bytes": 5645,
+    "artifacts": [
+      {
+        "status": 200,
+        "bytes": 6000080
+      },
+      {
+        "status": 200,
+        "bytes": 268934
+      },
+      {
+        "status": 200,
+        "bytes": 1308078
+      },
+      {
+        "status": 200,
+        "bytes": 6000080
+      }
+    ],
+    "gate": "BLOCK"
+  },
+  "concurrent_3": [
+    {
+      "status": 503,
+      "seconds": 0.0065,
+      "json_bytes": 181
+    },
+    {
+      "status": 200,
+      "seconds": 1.8905,
+      "json_bytes": 5629,
+      "artifacts": [
+        {
+          "status": 200,
+          "bytes": 3686480
+        },
+        {
+          "status": 200,
+          "bytes": 164922
+        },
+        {
+          "status": 200,
+          "bytes": 829108
+        },
+        {
+          "status": 200,
+          "bytes": 3686480
+        }
+      ],
+      "gate": "BLOCK"
+    },
+    {
+      "status": 200,
+      "seconds": 1.655,
+      "json_bytes": 5629,
+      "artifacts": [
+        {
+          "status": 200,
+          "bytes": 3686480
+        },
+        {
+          "status": 200,
+          "bytes": 164922
+        },
+        {
+          "status": 200,
+          "bytes": 829108
+        },
+        {
+          "status": 200,
+          "bytes": 3686480
+        }
+      ],
+      "gate": "BLOCK"
+    }
+  ],
+  "peak_rss_mib": 1119.14,
+  "limits": {
+    "status": "PRIVATE_DEVELOPMENT_PROTOTYPE",
+    "validated_public_service": false,
+    "max_file_bytes": 20971520,
+    "max_pixels": 2000000,
+    "max_side_pixels": 3200,
+    "max_concurrent_analyses_per_process": 2,
+    "supported_workers": 1,
+    "preview_ttl_seconds": 600,
+    "preview_store_budget_bytes": 134217728,
+    "max_local_preview_bytes": 6500000,
+    "preview_delivery": "private_capability_urls",
+    "memory_limit_guaranteed": false,
+    "real_world_accuracy": null,
+    "settlement_verification": "NOT_INTEGRATED"
+  }
+}

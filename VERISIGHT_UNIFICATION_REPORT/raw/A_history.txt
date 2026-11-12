@@ -1,0 +1,40 @@
+347c7a7612c59e0e8be56274187deb53ab251165 2026-11-11 21:16:38 +0530 Shreesha KS Improve receipt scanning and add localization release gates
+510042f25597b12c90f858131845019ef399747c 2026-11-11 19:36:06 +0530 Rahul Arya AV Serve product UI routes on direct navigation
+e0c4e808d81fec8cced28307c501e36e05a1e4de 2026-11-11 19:33:08 +0530 Rahul Arya AV Make model evaluation transparency accurate
+7564b11c64c54771204d55b603100c0167b680b3 2026-11-11 19:15:19 +0530 Rahul Arya AV Add VeriSight product experience UI
+036b22729273ea881860bac392fb0ce9e516676f 2026-11-11 19:01:11 +0530 Rahul Arya AV Merge ScamShield interface enhancements
+8952bc81776531e191460d83ac22ab6a38442d2f 2026-11-11 01:45:17 +0530 Rahul Arya AV Exclude local state from Vercel function bundle
+7c85a88b7cea1bd57c0dad97f271ff16f4a6721d 2026-11-11 01:30:22 +0530 Rahul Arya AV Enable Fluid Compute for large Python function
+c828a70b0cf3e27c7ffd6f6f3dd3a9e7a3d3c563 2026-11-11 01:19:38 +0530 Rahul Arya AV Slim Vercel runtime dependencies
+ea14dac511e586f5021ec3c589030ec65e851058 2026-11-11 01:16:24 +0530 Rahul Arya AV Clear historical uncalibrated confidence scores
+4576b68942ebd8206df7f4fae8b9f617c220991b 2026-11-11 01:06:45 +0530 Rahul Arya AV Exclude local secrets from Vercel deployments
+54d8321b17cd3134ec5475f10b625cf88ef010ba 2026-11-11 01:00:07 +0530 Rahul Arya AV Pin VeriSight runtime to Python 3.12
+07811ff69795661f85a39428bb45d6ab9d5283d4 2026-11-11 00:43:53 +0530 Rahul Arya AV Reduce Vercel function bundle size
+0a17e3ef629c66369a898cd13177af9651c81193 2026-11-11 00:37:54 +0530 Rahul Arya AV Make forensic review cues evidence-bounded
+8a29cc16d5484ccdd98ac726f1d6fdd583aea31e 2026-11-10 21:39:30 +0530 Rahul Arya AV Serve VeriSight frontend from CDN for faster startup
+8afd02d3f9a45ce041a16a733ca6692eb87e19fe 2026-11-10 21:32:10 +0530 Rahul Arya AV Show concise likely accuracy labels
+3b67176f58260cf0321e106c31b75e4752ac22cf 2026-11-10 21:21:06 +0530 Rahul Arya AV Make screenshot verdicts inconclusive without proof
+4f3a7ade5fb07f91d7c969c83dcd18821e4cff17 2026-11-10 16:43:02 +0530 Rahul Arya AV Keep full startup dashboard and speed sample loading
+3825023354ae6ef83b471bdb3fcf495d3aa36114 2026-11-10 16:19:00 +0530 Rahul Arya AV Speed up VeriSight startup
+8eede1f330d2722e639994250d8b6dad1c13a4dc 2026-11-10 16:07:29 +0530 Rahul Arya AV Reduce screenshot forensic false positives
+f02c44a8134449e2acd005908207aba5388ed493 2026-11-10 15:39:25 +0530 Rahul Arya AV Use Supabase signed upload method correctly
+6e48355884e00f3e418203f5d610381b99dca18e 2026-11-10 15:31:23 +0530 Rahul Arya AV Log private storage retrieval errors
+e2ee6b091158e2c581d933e6d47ab5eba3f87645 2026-11-10 15:28:43 +0530 Rahul Arya AV Restrict direct uploads to active evidence sessions
+25cccda4d16c67f503007d4445640cba794b9563 2026-11-10 15:25:20 +0530 Rahul Arya AV Authorize signed Supabase screenshot uploads
+8646b7cef1c0720012007c99a32b327a4f180c37 2026-11-10 15:21:41 +0530 Rahul Arya AV Support mobile layout and direct screenshot uploads
+4047516b9caaec4603c8da483e591971f4d1b450 2026-11-10 15:11:05 +0530 Rahul Arya AV Merge pull request #1 from Arya99908/vercel/install-vercel-speed-insights-vwckox
+a6f390df5f3d64e736fe295844af81e122984448 2026-11-10 09:33:58 +0000 Vercel Install Vercel Speed Insights package
+260914c9a317b8c316de0e66499075c3a3ff49f6 2026-11-10 14:56:33 +0530 Rahul Arya AV Add startup fallback for blank page failures
+abcc51f12f245d19db80fd5bfaab87d9ddbcc4a7 2026-11-10 14:50:21 +0530 Rahul Arya AV Add zoom and pan controls to screenshot viewer
+eb1e4680548831bc13c4d31f2f71c0cd5ea79351 2026-11-10 14:23:49 +0530 Rahul Arya AV Make deployed VeriSight workflows session-safe
+c47ee5b2db9883530be1586a8956a8da4c9fe99c 2026-11-10 13:18:50 +0530 Rahul Arya AV Correct production environment documentation
+193241cb78f85da6bbb0a827e0d54de24818e7b0 2026-11-10 13:17:20 +0530 Rahul Arya AV Document deployed VeriSight and Supabase setup
+3df573b09ef5546e43d19e333531f6d66cf7da31 2026-11-10 13:15:03 +0530 Rahul Arya AV Serve VeriSight dashboard at production root
+928b8f87117e45e73fc5b02d0bc4cbcf5558c942 2026-11-10 13:12:39 +0530 Rahul Arya AV Deploy VeriSight with Supabase persistence
+9d16629cfdeb4c1c7f50831a9a8f62f69f320dbc 2026-11-10 12:54:12 +0530 Rahul Arya AV Ignore local Supabase CLI state
+5da19ff2362888c8f3cd718c9d7cdc456b079ee1 2026-11-10 12:53:58 +0530 Rahul Arya AV Configure Supabase persistence and Vercel deployment
+4dbaa867dbdc3d329d3c0526e161d5b588cae982 2026-11-10 12:34:44 +0530 Rahul Arya AV Merge expanded four-layer VeriSight workbench
+8776fe61983173971ebdd50dbce682419327ee05 2026-11-10 12:11:38 +0530 Rahul Arya AV Integrate local forensic analysis API
+430b46a8dc0c6da5d510a8ff625ea6e9842a73f9 2026-11-10 11:37:36 +0530 Rahul Arya AV Keep upload metadata out of evidence polling
+c5daa3734c7f0763a44f05112c2070e7bc0696cc 2026-11-10 11:37:05 +0530 Rahul Arya AV Complete local upload and demo controls
+7cf88e9e587f2306d0259f635fe55d381f7e7ffd 2026-11-10 11:35:11 +0530 Rahul Arya AV Build VeriSight forensic workbench prototype

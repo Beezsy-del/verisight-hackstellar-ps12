@@ -1,23 +1,20 @@
 # VeriSight — Screenshot Forensic Triage Prototype
 
-> A prototype that computes visual review cues for screenshots. It is not a trained or calibrated authenticity classifier.
+> A private development prototype that computes visual review cues for screenshots. It is not a trained or calibrated authenticity classifier.
 
-## 🔴 Live Demo
+## Unified local project
 
-**[https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)**
+This folder combines inspected components from Hackstellar's `feat/screenshot-analysis-release-gates` and ScamShield's `feature/scamshield-scaling-enhancements`. Originals are preserved separately. Component choices and measured limitations are in [VERISIGHT_UNIFICATION_REPORT](VERISIGHT_UNIFICATION_REPORT/EXECUTIVE_VERDICT.md).
 
-| Endpoint | URL |
-|---|---|
-| Forensic Workbench | https://verisight-ps12.vercel.app |
-| Health Check | https://verisight-ps12.vercel.app/api/health |
-| API Docs (Swagger) | https://verisight-ps12.vercel.app/docs |
-| Demo Samples | https://verisight-ps12.vercel.app/api/demo-samples |
+This unified version has **not been deployed**. Any historical public demo is a different build. Start locally using the instructions below.
 
----
+## Operating and evaluation scope
+
+Use this build privately. [Operating guide](docs/private-operation.md) describes access, expiring previews, retention, measured delivery limits and rollback. [Evaluation protocol](docs/evaluation-protocol.md) defines authorized collection, grouped splits, validation-only threshold selection and reviewer comprehension testing. Neither a completed product mission nor improved real-world detection has been established.
 
 ## What It Does
 
-VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
+VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted only when explicitly enabled and Supabase is configured; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
 
 **Layer 1 — Pixel & Frequency Signal Forensics**
 - **Error Level Analysis (ELA):** Re-encodes the decoded pixels as JPEG and compares residuals. The residual heatmap is exploratory; score-based localization is disabled for non-JPEG sources. ELA residuals alone do not show splicing.
@@ -33,12 +30,12 @@ VeriSight accepts common image formats and computes pixel, layout, metadata, and
 - **Metadata:** Reads selected available image metadata. A software tag or absent EXIF is not proof of editing or forwarding.
 - **C2PA:** Searches raw bytes for possible marker strings only. It does not parse or cryptographically validate a Content Credential.
 - **QR decoding:** Uses OpenCV to decode readable QR payloads and identify broad types such as UPI URIs or web links. It does not test QR pixel integrity, validate a recipient, open a destination, or verify a payment.
-- **Text rules:** The default pipeline does not perform OCR text recognition, so receipt-time and UTR rules are generally unavailable for pixel-only text. If such data is present in supported metadata chunks, rule results remain format/context cues, not issuer validation.
+- **Text rules:** RapidOCR recognizes visible text and applies narrow receipt-statement rules. Receipt-time and UTR rules are separate from those statement checks and must not be mistaken for issuer validation. If such data is present in supported metadata chunks, rule results remain format/context cues, not issuer validation.
 - **Channel and viewport cues:** Metadata, encoding and dimensions are compared with simple heuristics. They cannot reliably identify an app or prove cropping.
 
 **Layer 4 — Ensemble & Cross-Layer Corroboration**
 - **Weighted risk aggregation:** Strong indicators (`text_geometry` = 35 pts, `copy_move` = 28–42 pts, `time_consistency` = 35 pts, `reference_format` = 20 pts) are combined with weak review cues (ELA macroblock count, wavelet noise, rendering variation, software metadata) capped at 12 pts. Total score is capped at 92.0.
-- **Cross-Layer Spatial IoU:** For each clone-detected bounding box and each anomalous baseline box, pairwise IoU is computed. A primary forgery locus is declared when IoU ≥ 0.20, upgrading the verdict and adding a `CROSS_LAYER_SYNERGY_LOCUS` bounding box to the report.
+- **Cross-Layer Spatial IoU:** For each clone-detected bounding box and each anomalous baseline box, pairwise IoU is computed. A primary review region is reported when IoU ≥ 0.20, upgrading the verdict and adding a `CROSS_LAYER_SYNERGY_LOCUS` bounding box to the report.
 - **Assessment:** The API returns `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES` as heuristic evidence states. Error probability and calibrated confidence are unavailable.
 
 ---
@@ -52,7 +49,7 @@ VeriSight accepts common image formats and computes pixel, layout, metadata, and
 | **WebP** | Supported via OpenCV decode |
 | **BMP** | Supported; no JPEG-specific metadata checks apply |
 
-Maximum upload size: **20 MB**
+Maximum upload size: **20 MiB**, **2 megapixels**, **3200 pixels per side**. These are enforced development limits, not validated capacity guarantees. Two analyses per process; one worker only.
 
 ---
 
@@ -102,12 +99,12 @@ Five synthetic, watermarked samples are bundled for instant demonstration:
 ### Quick Start
 
 ```bash
-git clone https://github.com/Arya99908/verisight-hackstellar-ps12.git
-cd verisight-hackstellar-ps12
+cd /Users/shreeshaks/Documents/VERISIGHT_UNIFIED
 
 # Backend
-python3 -m venv .venv
+python3.12 -m venv .venv
 .venv/bin/pip install -r backend/requirements.txt
+.venv/bin/pip install --no-deps --force-reinstall opencv-python-headless==4.10.0.84
 
 # Frontend
 cd frontend && npm ci && npm run build && cd ..
@@ -442,3 +439,10 @@ See [the dataset permission audit, collection plan, and release protocol](docs/L
 metrics, model version, threshold, and calibrated confidence remain unavailable.
 Manifest provenance checks are in `backend/app/evaluation/data_audit.py`; they
 do not certify licensing or discover image duplicates by themselves.
+
+
+## Unified processing decisions
+
+`analysis_gate` separates processing readiness from review findings. PASS means required processing completed without a configured review cue; WARNING requires review; BLOCK means required evidence or processing is incomplete/invalid. None approves money, goods, authenticity or settlement. `visual_tamper_score` remains separate from receipt statement warnings, and `confidence_score` remains null without validated calibration. The frontend shows **Likely accurate** / **Likely misleading** exactly as requested, with evidence and readiness limitations beside them.
+
+Verify frontend contracts with `npm run test --prefix frontend`; run backend tests with `.venv/bin/python -m pytest backend/tests -q`. Production UI compilation is `npm run build --prefix frontend`. Optional Supabase configuration enables cloud persistence and signed-upload workflows; local image analysis works without it. No bank/PSP transaction-status integration is configured.

@@ -22,5 +22,9 @@ cdn = true
 [tool.vercel.scripts]
 build = "npm run build --prefix frontend"
 
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+
 
 

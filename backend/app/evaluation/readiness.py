@@ -2,6 +2,10 @@
 
 
 def release_readiness():
+    from app.evaluation.gates import evaluate_model_release
+    # No independently verified release record is installed. Client-supplied
+    # assertions are deliberately never accepted as promotion evidence.
+    decision = evaluate_model_release({})
     return {
         'status': 'BLOCKED',
         'training_permitted': False,
@@ -16,6 +20,7 @@ def release_readiness():
         'validation_false_positive_target': 0.01,
         'threshold': None,
         'model_version': None,
+        'gate': decision,
     }
 
 

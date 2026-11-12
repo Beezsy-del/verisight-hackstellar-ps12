@@ -1,0 +1,2 @@
+* feat/screenshot-analysis-release-gates                347c7a7 [origin/feat/screenshot-analysis-release-gates] Improve receipt scanning and add localization release gates
+  remotes/origin/feat/screenshot-analysis-release-gates 347c7a7 Improve receipt scanning and add localization release gates

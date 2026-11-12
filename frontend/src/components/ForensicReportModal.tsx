@@ -1,3 +1,6 @@
+import { PersistenceNotice } from "./PersistenceNotice";
+import { ReviewLimitations } from "./ReviewLimitations";
+import { AnalysisGatePanel } from "./AnalysisGatePanel";
 import React from "react";
 import {
   X,
@@ -60,6 +63,8 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
   return (
     <div className="forensic-print-root fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-[#0b1120] border border-[#1e293b] rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden print:m-0 print:p-0 print:border-none print:shadow-none print:max-h-full print:w-full print:bg-white print:text-black">
+        <AnalysisGatePanel gate={report.analysis_gate} />
+        <PersistenceNotice status={report.persistence_status} />
         {/* Top Modal Controls (Hidden in Print) */}
         <div className="h-14 px-6 border-b border-[#1e293b] bg-[#070b14] flex items-center justify-between no-print">
           <div className="flex items-center space-x-2">
@@ -125,6 +130,8 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             </div>
           </div>
 
+          <ReviewLimitations verdict={verdict} />
+
           {/* Section 1: Executive Verdict & SHA-256 Integrity */}
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-50 space-y-2">
@@ -143,7 +150,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Heuristic Score: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
+                Review priority (not probability): <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
               </div>
             </div>
 
@@ -251,7 +258,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                     </td>
                     <td className="p-2.5">
                       Overlapping indicators:{" "}
-                      {synergy.synergy_multiplier_applied
+                      {synergy.region_overlap_found
                         ? "Found in highlighted region"
                         : "None found"}
                     </td>

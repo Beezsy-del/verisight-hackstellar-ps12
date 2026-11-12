@@ -1,3 +1,6 @@
+import { PersistenceNotice } from "./PersistenceNotice";
+import { ReviewLimitations } from "./ReviewLimitations";
+import { AnalysisGatePanel } from "./AnalysisGatePanel";
 import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
@@ -103,9 +106,9 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   } = report;
 
   const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
-  const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated;
+  const isReviewRequired = verdict !== "INCONCLUSIVE";
 
-  // Calibrated Gauge Calculations
+  // Uncalibrated review-priority gauge
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset =
@@ -146,7 +149,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 ? "border-rose-500/60 bg-rose-950/80 text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.3)]"
                 : "border-emerald-500/60 bg-emerald-950/80 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
             }`}
-            title={`Tamper Score: ${overall_tamper_score.toFixed(1)} / 100`}
+            title={`Review priority: ${overall_tamper_score.toFixed(1)} / 100; not a probability`}
           >
             {Math.round(overall_tamper_score)}
           </div>
@@ -230,7 +233,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 {displayScore.toFixed(1)}
               </span>
               <span className="font-mono text-[8px] uppercase tracking-wider text-slate-400">
-                Risk Score
+                Review priority
               </span>
             </div>
           </div>
@@ -262,6 +265,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <p className="mt-2 text-[11px] text-slate-400">Screenshot analysis does not verify payment settlement. That requires an authorized bank or PSP transaction-status integration.</p>
           </div>
         </motion.div>
+
+        <ReviewLimitations verdict={verdict} />
+        <AnalysisGatePanel gate={report.analysis_gate} />
+        <PersistenceNotice status={report.persistence_status} />
 
         {/* Stage 2 (60ms): Syndicate Entity Resolution Card */}
         {report.syndicate_intelligence && (
@@ -349,7 +356,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
         )}
 
         {/* Cross-Layer Synergy Banner */}
-        {synergy.synergy_multiplier_applied && (
+        {synergy.region_overlap_found && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -362,17 +369,17 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 <span className="text-xs font-semibold">Multi-Signal Convergence</span>
               </div>
               <span className="rounded bg-amber-900/60 px-1.5 py-0.5 font-mono text-[9px] text-amber-200 border border-amber-700/50">
-                {synergy.multiplier_factor}x BOOST
+                REGION OVERLAP
               </span>
             </div>
             <p className="text-[11px] leading-relaxed text-amber-200/90 font-sans">
               {synergy.synergy_explanation}
             </p>
-            {synergy.primary_forgery_locus && (
+            {synergy.primary_review_locus && (
               <button
                 onClick={() => {
-                  onSelectLocus(synergy.primary_forgery_locus || null);
-                  toast("Targeting Primary Forgery Locus");
+                  onSelectLocus(synergy.primary_review_locus || null);
+                  toast("Inspecting overlapping review cues");
                 }}
                 className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-600/20 py-1 font-mono text-[10px] text-amber-200 hover:bg-amber-600/30 active:scale-[0.98]"
               >
@@ -502,7 +509,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                   <p className="text-slate-300 leading-snug">
                     {layer2.max_baseline_drift_px > 2
                       ? `Font baseline drift of +${layer2.max_baseline_drift_px.toFixed(1)}px detected on payment fields.`
-                      : "Text baselines and font rendering match native device geometry."}
+                      : "No configured geometry cue was found. This does not verify native rendering or exclude edits."}
                   </p>
                 )}
               </div>
@@ -604,7 +611,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             {openLayers[4] && (
               <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
                 <p className="text-slate-300 leading-snug">
-                  {synergy.synergy_multiplier_applied
+                  {synergy.region_overlap_found
                     ? "Spatial intersection detected between independent forensic layers."
                     : "No cross-layer geometric spatial overlap detected."}
                 </p>
@@ -717,10 +724,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           )}
         </div>
 
-        {/* 5. Cryptographic Custody Metadata Card */}
+        {/* 5. Uploaded File Hash Metadata Card */}
         <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/70 p-3 space-y-1.5 font-mono text-[11px]">
           <div className="font-semibold uppercase tracking-wider text-[10px] text-slate-400">
-            Cryptographic Custody
+            Uploaded File Hash
           </div>
           <div className="flex items-center justify-between text-slate-300">
             <span className="truncate max-w-[220px]" title={file_sha256}>

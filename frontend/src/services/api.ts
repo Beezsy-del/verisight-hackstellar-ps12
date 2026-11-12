@@ -18,10 +18,10 @@ async function fetchStartupData(path: string): Promise<Response> {
 }
 
 async function responseError(res: Response, fallback: string): Promise<Error> {
-  if (res.status === 413) {
-    return new Error("This screenshot is too large to upload. Choose an image under 20 MB.");
-  }
   const data = await res.json().catch(() => null);
+  if (res.status === 413) {
+    return new Error(typeof data?.detail === "string" ? data.detail : "Use a screenshot up to 20 MiB, 2 megapixels and 3200 pixels per side.");
+  }
   const detail = typeof data?.detail === "string" ? data.detail : fallback;
   return new Error(detail);
 }

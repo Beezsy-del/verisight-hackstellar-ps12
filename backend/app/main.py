@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import sys
 import os
 from contextlib import asynccontextmanager
@@ -24,17 +26,33 @@ from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure synthetic demo fixtures are available
+    from app.services.artifacts import store
+    async def sweep():
+        while True:
+            await asyncio.sleep(30)
+            store.cleanup()
+            from app.api.endpoints import _MOBILE_UPLOADS
+            from time import monotonic
+            for key, item in list(_MOBILE_UPLOADS.items()):
+                if monotonic() - item["received_at"] > 600:
+                    _MOBILE_UPLOADS.pop(key, None)
+            if os.getenv("SUPABASE_SERVICE_ROLE_KEY") and os.getenv("SUPABASE_URL"):
+                from app.services.supabase_store import expire_private_cases
+                await expire_private_cases()
+            if os.getenv("SUPABASE_SERVICE_ROLE_KEY") and os.getenv("SUPABASE_URL"):
+                from app.services.mobile_upload_store import _cleanup_expired
+                await asyncio.to_thread(_cleanup_expired, os.environ["SUPABASE_SERVICE_ROLE_KEY"])
+    cleanup = asyncio.create_task(sweep())
     try:
-        if os.getenv("VERCEL"):
-            yield
-            return
-        if not any(settings.SAMPLES_DIR.glob("sample_*")):
+        if not os.getenv("VERCEL") and not any(settings.SAMPLES_DIR.glob("sample_*")):
             from samples.generator import generate_all_samples
             generate_all_samples()
-    except Exception as e:
-        print(f"[Startup Warning] Could not auto-generate samples: {e}")
-    yield
+        yield
+    finally:
+        cleanup.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await cleanup
+        store.clear()
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -48,14 +66,20 @@ async def invalid_image_handler(request, exc):
     return JSONResponse(status_code=413 if isinstance(exc, ImageTooLarge) else 422,
                         content={"detail": str(exc)})
 
+from app.services.resource_boundary import AnalysisBoundary
+app.add_middleware(AnalysisBoundary, capacity=2, response_budget=4_000_000)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5174", "http://127.0.0.1:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from app.services.private_access import PrivateAccess
+app.add_middleware(PrivateAccess)
 
 # Mount samples static directory
 if not settings.SAMPLES_DIR.exists():

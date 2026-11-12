@@ -1,0 +1,22 @@
+....F................................................................... [ 77%]
+.....................                                                    [100%]
+=================================== FAILURES ===================================
+_______________ test_client_side_routes_serve_the_spa_entrypoint _______________
+
+    def test_client_side_routes_serve_the_spa_entrypoint():
+        for path in ("/workbench", "/evaluation"):
+            response = client.get(path)
+>           assert response.status_code == 200
+E           assert 404 == 200
+E            +  where 404 = <Response [404 Not Found]>.status_code
+
+backend/tests/test_api_workflows.py:48: AssertionError
+=============================== warnings summary ===============================
+../../../../COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37
+  /Users/shreeshaks/Documents/COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_api_workflows.py::test_client_side_routes_serve_the_spa_entrypoint
+1 failed, 92 passed, 1 warning in 46.19s

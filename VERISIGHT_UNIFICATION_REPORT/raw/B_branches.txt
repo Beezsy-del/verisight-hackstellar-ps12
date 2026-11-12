@@ -1,0 +1,2 @@
+* feature/scamshield-scaling-enhancements                2260e52 [origin/feature/scamshield-scaling-enhancements] feat(ui): complete VeriSight Pro 3-pillar product UI overhaul, landing page, and workbench experience
+  remotes/origin/feature/scamshield-scaling-enhancements 2260e52 feat(ui): complete VeriSight Pro 3-pillar product UI overhaul, landing page, and workbench experience

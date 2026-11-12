@@ -1,3 +1,5 @@
+import { isReportPreviewFailure } from "../services/previewFailure";
+import { PreviewUnavailable } from "./PreviewUnavailable";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Layers,
@@ -58,6 +60,9 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
     setInternalViewMode(mode);
     onViewModeChange?.(mode);
   };
+
+  const [failedPreviewReport, setFailedPreviewReport] = useState<ForensicAnalysisReport | null>(null);
+  useEffect(() => { setFailedPreviewReport(null); }, [report]);
 
   const [showLasers, setShowLasers] = useState<boolean>(true);
   const [showBoxes, setShowBoxes] = useState<boolean>(true);
@@ -201,7 +206,15 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   ];
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-transparent select-none">
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-transparent select-none"
+      onErrorCapture={event => {
+        const image = event.target as Element;
+        if (isReportPreviewFailure(image.tagName, image.getAttribute?.("src") ?? null,
+          [original_image_b64, layer1.ela_b64, layer1.wavelet_noise_b64, layer1.clone_b64])) {
+          setFailedPreviewReport(report);
+        }
+      }}>
+      {failedPreviewReport === report && <PreviewUnavailable />}
       {/* Sub-Toolbar (h-11 bg-[#0B101B] border-b border-white/[0.06]) */}
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0B101B]/95 px-3 backdrop-blur text-xs">
         {/* Left: Sliding Segmented Primary View Tabs */}
@@ -549,7 +562,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                       {/* Sub-pixel Horizontal Baseline Alignment Lasers */}
                       {showLasers &&
                         layer2.lasers.map((laser, idx) => {
-                          const hasAlignmentCue = laser.is_tampered;
+                          const hasAlignmentCue = laser.is_alignment_outlier;
                           const x1 = laser.x_start ?? 40;
                           const x2 = laser.x_end ?? image_width - 40;
                           const y = laser.y_baseline;

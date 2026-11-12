@@ -1,0 +1,31 @@
+[
+  {
+    "version": "U",
+    "kind": "pytest",
+    "command": [
+      "/Users/shreeshaks/Documents/COMPARATIVE_AUDIT/.venv-numpy2/bin/python",
+      "-m",
+      "pytest",
+      "backend/tests",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "--junitxml=/Users/shreeshaks/Documents/VERISIGHT_UNIFIED/VERISIGHT_UNIFICATION_REPORT/raw/U_pytest.xml"
+    ],
+    "cwd": "/Users/shreeshaks/Documents/VERISIGHT_UNIFIED",
+    "exit": 1,
+    "seconds": 49.71725512499688
+  },
+  {
+    "version": "U",
+    "kind": "benchmark",
+    "command": [
+      "/Users/shreeshaks/Documents/COMPARATIVE_AUDIT/.venv-numpy2/bin/python",
+      "/Users/shreeshaks/Documents/VERISIGHT_UNIFIED/VERISIGHT_UNIFICATION_REPORT/scripts/benchmark.py",
+      "U"
+    ],
+    "cwd": "/Users/shreeshaks/Documents/VERISIGHT_UNIFIED",
+    "exit": 0,
+    "seconds": 101.58344429198769
+  }
+]

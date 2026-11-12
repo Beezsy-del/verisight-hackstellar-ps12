@@ -1,0 +1,26 @@
+.................................F...................................... [ 59%]
+.................................................                        [100%]
+=================================== FAILURES ===================================
+_____________ test_mobile_upload_is_delivered_only_to_its_session ______________
+
+    def test_mobile_upload_is_delivered_only_to_its_session():
+        session_id = str(uuid4())
+        image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
+        uploaded = client.post(
+            f"/api/mobile-upload?session_id={session_id}",
+            files={"file": ("phone.png", image, "image/png")},
+        )
+>       assert uploaded.status_code == 200
+E       assert 503 == 200
+E        +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+backend/tests/test_api_workflows.py:90: AssertionError
+=============================== warnings summary ===============================
+../COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37
+  /Users/shreeshaks/Documents/COMPARATIVE_AUDIT/.venv-numpy2/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_api_workflows.py::test_mobile_upload_is_delivered_only_to_its_session
+1 failed, 120 passed, 1 warning in 49.24s

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -96,7 +96,28 @@ class ForensicFinding(BaseModel):
     metric_value: str
     bounding_box: BoundingBox | None = None
 
+class GateReason(BaseModel):
+    code: str
+    state: Literal["PASS", "WARNING", "BLOCK"]
+    message: str
+    evidence_ids: list[str] = Field(default_factory=list)
+
+
+class AnalysisGate(BaseModel):
+    state: Literal["PASS", "WARNING", "BLOCK"] = "BLOCK"
+    processing_status: Literal["COMPLETE", "INCOMPLETE", "FAILED"] = "INCOMPLETE"
+    policy_version: str = "analysis-review-v1"
+    reasons: list[GateReason] = Field(default_factory=lambda: [GateReason(code="NOT_EVALUATED", state="BLOCK", message="No processing gate decision is available.")])
+    allowed_actions: dict[str, bool] = Field(default_factory=lambda: {"view_report": False, "automated_approval": False})
+    settlement_verified: Literal[False] = False
+
+
 class ForensicAnalysisReport(BaseModel):
+    persistence_status: Literal["NOT_REQUESTED", "DISABLED", "NOT_CONFIGURED", "SAVED", "FAILED"] = "NOT_REQUESTED"
+    analysis_gate: AnalysisGate = Field(default_factory=AnalysisGate)
+    evidence_sources: dict[str, Any] = Field(default_factory=dict)
+    visual_tamper_score: float | None = None
+    score_kind: str = "uncalibrated_review_priority"
     file_sha256: str
     filename: str | None = "screenshot.png"
     timestamp: str

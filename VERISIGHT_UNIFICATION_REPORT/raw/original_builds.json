@@ -1,0 +1,40 @@
+[
+  {
+    "version": "A",
+    "command": [
+      "npm",
+      "ci",
+      "--no-audit",
+      "--no-fund"
+    ],
+    "exit": 0
+  },
+  {
+    "version": "A",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0
+  },
+  {
+    "version": "B",
+    "command": [
+      "npm",
+      "ci",
+      "--no-audit",
+      "--no-fund"
+    ],
+    "exit": 0
+  },
+  {
+    "version": "B",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0
+  }
+]

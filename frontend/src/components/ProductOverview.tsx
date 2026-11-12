@@ -1,3 +1,4 @@
+import { ReviewLimitations } from "./ReviewLimitations";
 import React, { useState } from "react";
 import {
   ShieldCheck,
@@ -74,6 +75,8 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             {/* Supporting paragraph */}
             <p className="text-base text-slate-300 sm:text-lg leading-relaxed max-w-2xl font-sans">Inspect pixel residuals, text-like geometry, metadata, and readable QR payloads. VeriSight provides review cues; it does not prove authenticity, detect every edit, or verify a payment.</p>
 
+            <ReviewLimitations />
+
             {/* Dual CTAs */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
@@ -113,7 +116,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               </div>
               <div>
                 <span className="block text-slate-400">Analysis Privacy</span>
-                <span className="text-sm font-semibold text-sky-400">Summary persistence</span>
+                <span className="text-sm font-semibold text-sky-400">Optional summary saving</span>
               </div>
             </div>
           </div>
@@ -645,7 +648,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
               Data Handling & Report Scope
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">Case summaries are persisted when the database is connected. Signed uploads temporarily use private storage.</p>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base">Case-summary saving is off by default and requires the operator to opt in. Each result reports whether its summary was saved, unavailable, or failed; a connected database alone does not mean a case was saved.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -653,8 +656,8 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-4">
                 <Lock className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Summary persistence Processing</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Direct uploads are analyzed in memory. Signed uploads use private storage and are deleted after consumption; abandoned uploads have best-effort cleanup after 24 hours.</p>
+              <h3 className="text-base font-bold text-white">Temporary previews & saved summaries</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">Analysis can create private preview files on this server. Preview links expire after 10 minutes. Opt-in summaries carry a 7-day retention policy; cleanup is attempted while the server is running and the database is reachable. Signed-upload files are removed after consumption, with best-effort cleanup of abandoned uploads after 24 hours. These are prototype policies, not a cloud deletion guarantee.</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">

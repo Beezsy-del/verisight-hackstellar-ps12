@@ -1,0 +1,134 @@
+backend/tests/test_analysis_gates.py::test_complete_is_not_payment_approval
+backend/tests/test_analysis_gates.py::test_missing_text_blocks_without_fraud_claim[UNAVAILABLE]
+backend/tests/test_analysis_gates.py::test_missing_text_blocks_without_fraud_claim[NO_READABLE_TEXT]
+backend/tests/test_analysis_gates.py::test_missing_text_blocks_without_fraud_claim[None]
+backend/tests/test_analysis_gates.py::test_missing_text_blocks_without_fraud_claim[unexpected]
+backend/tests/test_analysis_gates.py::test_bad_scores_fail_closed[nan]
+backend/tests/test_analysis_gates.py::test_bad_scores_fail_closed[inf]
+backend/tests/test_analysis_gates.py::test_bad_scores_fail_closed[-1]
+backend/tests/test_analysis_gates.py::test_bad_scores_fail_closed[101]
+backend/tests/test_analysis_gates.py::test_real_evidence_warns
+backend/tests/test_analysis_gates.py::test_conflicting_high_evidence_blocks
+backend/tests/test_analysis_gates.py::test_no_support_blocks_review
+backend/tests/test_analysis_gates.py::test_region_outside_image_blocks
+backend/tests/test_analysis_gates.py::test_default_gate_blocks
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[permissions_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[files_and_masks_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[source_groups_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[locked_test_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[validation_threshold_fixed]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[calibration_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[metrics_passed]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[artifact_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[deployment_limits_verified]
+backend/tests/test_analysis_gates.py::test_every_model_release_condition_enforced[rollback_verified]
+backend/tests/test_analysis_gates.py::test_model_gate_no_truthy_shortcuts
+backend/tests/test_api_workflows.py::test_each_demo_endpoint_matches_its_published_verdict
+backend/tests/test_api_workflows.py::test_unknown_demo_sample_is_a_404
+backend/tests/test_api_workflows.py::test_model_status_does_not_claim_a_trained_classifier
+backend/tests/test_api_workflows.py::test_model_evaluation_reports_missing_validation_data
+backend/tests/test_api_workflows.py::test_client_side_routes_serve_the_spa_entrypoint
+backend/tests/test_api_workflows.py::test_upload_analysis_endpoint_accepts_an_image
+backend/tests/test_api_workflows.py::test_whatsapp_simulation_endpoint_returns_comparison
+backend/tests/test_api_workflows.py::test_production_mobile_upload_requires_paired_session
+backend/tests/test_api_workflows.py::test_mobile_upload_is_delivered_only_to_its_session
+backend/tests/test_c2pa_inspector.py::test_c2pa_marker_is_never_misrepresented_as_cryptographically_verified
+backend/tests/test_c2pa_inspector.py::test_absent_c2pa_marker_is_reported_as_absent
+backend/tests/test_data_readiness.py::test_complete_manifest_passes_structural_audit
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[source_app]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[template_id]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[device_id]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[contributor_id]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[original_screenshot_id]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[editing_session_id]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[near_duplicate_group]
+backend/tests/test_data_readiness.py::test_each_shared_identity_prevents_split_leakage[sha256]
+backend/tests/test_data_readiness.py::test_incomplete_or_demo_provenance_rejected[change0]
+backend/tests/test_data_readiness.py::test_incomplete_or_demo_provenance_rejected[change1]
+backend/tests/test_data_readiness.py::test_incomplete_or_demo_provenance_rejected[change2]
+backend/tests/test_data_readiness.py::test_incomplete_or_demo_provenance_rejected[change3]
+backend/tests/test_data_readiness.py::test_empty_and_unauthorized_data_rejected
+backend/tests/test_data_readiness.py::test_locked_test_manifest_detects_changes_only_to_test
+backend/tests/test_data_readiness.py::test_no_weights_never_claims_loading_or_inference
+backend/tests/test_data_readiness.py::test_endpoints_expose_blocked_release_and_no_confidence
+backend/tests/test_gate_persistence.py::test_saved_case_keeps_gate_provenance_without_images
+backend/tests/test_layer1_signal.py::test_ela_computation
+backend/tests/test_layer1_signal.py::test_wavelet_noise_analysis
+backend/tests/test_layer1_signal.py::test_copy_move_detection
+backend/tests/test_layer1_signal.py::test_jpeg_ghost_analysis
+backend/tests/test_layer2_geometry.py::test_ocr_engine_token_extraction
+backend/tests/test_layer2_geometry.py::test_baseline_laser_clean
+backend/tests/test_layer2_geometry.py::test_baseline_laser_spliced
+backend/tests/test_layer2_geometry.py::test_cielab_patch_analysis
+backend/tests/test_layer3_metadata.py::test_viewport_analysis
+backend/tests/test_layer3_metadata.py::test_upi_utr_validation
+backend/tests/test_layer3_metadata.py::test_temporal_paradox
+backend/tests/test_layer3_metadata.py::test_possible_messaging_profile_is_not_an_app_identification
+backend/tests/test_layer3_metadata.py::test_exif_metadata_inspection
+backend/tests/test_layer4_ensemble.py::test_clean_ensemble_calibration
+backend/tests/test_layer4_ensemble.py::test_cross_layer_spatial_iou_synergy
+backend/tests/test_qr_inspector.py::test_qr_inspector_decodes_upi_fields_without_claiming_authenticity
+backend/tests/test_qr_inspector.py::test_qr_inspector_does_not_report_qr_when_none_is_present
+backend/tests/test_qr_inspector.py::test_qr_pattern_is_not_mistaken_for_tampered_text_geometry
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[PNG-FAKE PAYMENT RECEIPT]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[PNG-FOR DEMO ONLY]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[PNG-NOT A REAL TRANSACTION]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[PNG-Payment failed]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[PNG-Transaction declined]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[JPEG-FAKE PAYMENT RECEIPT]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[JPEG-FOR DEMO ONLY]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[JPEG-NOT A REAL TRANSACTION]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[JPEG-Payment failed]
+backend/tests/test_receipt_text.py::test_visible_negative_receipt_text_is_not_favorable[JPEG-Transaction declined]
+backend/tests/test_receipt_text.py::test_non_assertions_are_not_treated_as_negative_receipt_evidence[Payment successful]
+backend/tests/test_receipt_text.py::test_non_assertions_are_not_treated_as_negative_receipt_evidence[Report fake payment receipts]
+backend/tests/test_receipt_text.py::test_non_assertions_are_not_treated_as_negative_receipt_evidence[Never share OTP]
+backend/tests/test_receipt_text.py::test_non_assertions_are_not_treated_as_negative_receipt_evidence[Payment failed? Contact support]
+backend/tests/test_receipt_text.py::test_unavailable_ocr_does_not_silently_produce_favorable_result
+backend/tests/test_receipt_text.py::test_low_confidence_text_does_not_create_fake_evidence
+backend/tests/test_resource_boundary.py::test_large_response_is_blocked_and_slot_released
+backend/tests/test_resource_boundary.py::test_concurrent_overload_is_explicit_and_recovers
+backend/tests/test_resource_boundary.py::test_exception_releases_slot
+backend/tests/test_resource_boundary.py::test_unvalidated_report_never_leaves_as_success[report0]
+backend/tests/test_resource_boundary.py::test_unvalidated_report_never_leaves_as_success[report1]
+backend/tests/test_resource_boundary.py::test_unvalidated_report_never_leaves_as_success[report2]
+backend/tests/test_resource_boundary.py::test_unvalidated_report_never_leaves_as_success[report3]
+backend/tests/test_synthetic_samples.py::test_api_health
+backend/tests/test_synthetic_samples.py::test_api_demo_samples_list
+backend/tests/test_synthetic_samples.py::test_sample_1_clean_synthetic_fixture
+backend/tests/test_synthetic_samples.py::test_authentic_screenshot_transforms_do_not_escalate_to_manipulated
+backend/tests/test_synthetic_samples.py::test_png_ela_is_not_scored_as_manipulation_evidence
+backend/tests/test_synthetic_samples.py::test_sample_2_spliced_amount
+backend/tests/test_synthetic_samples.py::test_sample_3_temporal_paradox
+backend/tests/test_synthetic_samples.py::test_sample_4_synthetic_jpeg_reencode
+backend/tests/test_synthetic_samples.py::test_sample_5_cloned_receipt
+backend/tests/test_synthetic_samples.py::test_api_analyze_sample_endpoint
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[-/api/analyze]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[-/api/simulate-whatsapp]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[-/api/mobile-upload]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[not an image-/api/analyze]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[not an image-/api/simulate-whatsapp]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[not an image-/api/mobile-upload]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[<svg></svg>-/api/analyze]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[<svg></svg>-/api/simulate-whatsapp]
+backend/tests/test_workflow_regressions.py::test_invalid_uploads_are_client_errors[<svg></svg>-/api/mobile-upload]
+backend/tests/test_workflow_regressions.py::test_supported_images_decode[PNG]
+backend/tests/test_workflow_regressions.py::test_supported_images_decode[JPEG]
+backend/tests/test_workflow_regressions.py::test_supported_images_decode[WEBP]
+backend/tests/test_workflow_regressions.py::test_supported_images_decode[BMP]
+backend/tests/test_workflow_regressions.py::test_oversized_dimensions_rejected_before_cv_decode
+backend/tests/test_workflow_regressions.py::test_unsupported_and_tiny_images_rejected
+backend/tests/test_workflow_regressions.py::test_mobile_poll_cannot_read_or_clear_another_session
+backend/tests/test_workflow_regressions.py::test_local_mobile_requires_session
+backend/tests/test_workflow_regressions.py::test_poll_before_signed_object_exists_is_empty
+backend/tests/test_workflow_regressions.py::test_losing_concurrent_consumer_does_not_analyze_or_delete
+backend/tests/test_workflow_regressions.py::test_corrupt_claimed_image_is_deleted
+backend/tests/test_workflow_regressions.py::test_difference_heatmap_saturates_without_integer_wrap
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/starlette/testclient.py:37
+  /Users/shreeshaks/Documents/VERISIGHT_UNIFIED/.venv/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+126 tests collected in 0.52s
