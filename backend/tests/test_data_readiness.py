@@ -61,10 +61,10 @@ def test_endpoints_expose_blocked_release_and_no_confidence():
     status=client.get('/api/model/status').json()
     evaluation=client.get('/api/model/evaluation').json()
     for result in (status,evaluation):
-        assert result['release_gate']['deployment_permitted'] is False
-        assert result['release_gate']['training_permitted'] is False
-        assert result['release_gate']['threshold'] is None
-    assert status['active_model_id'] is None
+        assert result['release_readiness']['deployment_permitted'] is False
+        assert result['release_readiness']['training_permitted'] is False
+        assert result['release_readiness']['threshold'] is None
+    assert status['active_model_id'] == 'heuristic-review-v2'
     assert status['evidence_sources']['payment_status']['settlement_verified'] is None
     assert status['evidence_sources']['visual_tampering']['calibrated_confidence'] is None
     assert evaluation['metrics'] is None

@@ -16,6 +16,7 @@ import {
 } from "../types/forensic";
 
 interface WhatsAppSimulatorModalProps {
+  originalSrc: string;
   isOpen: boolean;
   onClose: () => void;
   simulationData: WhatsAppSimulationResponse | null;
@@ -24,6 +25,7 @@ interface WhatsAppSimulatorModalProps {
 }
 
 export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
+  originalSrc,
   isOpen,
   onClose,
   simulationData,
@@ -65,7 +67,8 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 Educational WhatsApp Media Laundering Simulator
               </h3>
               <p className="text-[11px] text-[#64748b]">
-                Fixed JPEG transform for comparing review cues before and after recompression
+                Inspects metadata stripping (EXIF/ICC) and demonstrates forensic
+                survival of typographic lasers & wavelets
               </p>
             </div>
           </div>
@@ -186,7 +189,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                       BEFORE (ORIGINAL LOSSLESS)
                     </span>
                     <img
-                      src={simulationData.reanalysis.original_image_b64}
+                      src={originalSrc}
                       alt="Before"
                       className="max-h-80 object-contain rounded border border-[#1e293b]"
                     />
@@ -221,20 +224,13 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-[#94a3b8]">
                   <span className="font-semibold text-emerald-300">
-                    Why does VeriSight still catch forgeries after WhatsApp
-                    laundering?
+                    What does this delivery simulation establish?
                   </span>
                   <p className="leading-relaxed">
-                    Social media platforms strip EXIF metadata and quantize DCT
-                    high frequencies, which often defeats basic camera PRNU
-                    checks. However,{" "}
-                    <strong>Layer 2 Sub-Pixel Typographic Baselines</strong> and{" "}
-                    <strong>
-                      Layer 1 Daubechies db4 Wavelet Noise Boundaries
-                    </strong>{" "}
-                    are structurally geometric: the pixel shifts and off-color
-                    card halos survive 4:2:0 subsampling, allowing VeriSight to
-                    confidently detect manipulation even on forwarded images.
+                    This is a controlled JPEG/resizing approximation, not a capture from WhatsApp.
+                    It shows how delivery can change measured cues in both edited and unedited images.
+                    Recompression may erase editing traces or introduce new artifacts; neither a lower
+                    score nor a surviving anomaly proves authenticity or forgery.
                   </p>
                 </div>
               </div>

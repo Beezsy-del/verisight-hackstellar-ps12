@@ -1,6 +1,4 @@
-export function verdictLabel(verdict: string): "Likely accurate" | "Likely misleading" {
-  // The API's verdicts are evidence states, not calibrated probabilities.
-  // Keep the two-label presentation requested by the user: any detected
-  // review/anomaly state maps to the cautious warning label.
+/** Only these two product labels are displayed. Internal assessment states remain separate. */
+export function verdictLabel(verdict: string, _score?: number): string {
   return verdict === "INCONCLUSIVE" ? "Likely accurate" : "Likely misleading";
 }

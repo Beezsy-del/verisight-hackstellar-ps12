@@ -56,12 +56,12 @@ def calibrate_ensemble(
             break
 
     strong: dict[str, int] = {}
-    if any(row.is_alignment_outlier for row in layer2.lasers):
+    if any(row.is_tampered for row in layer2.lasers):
         strong["text_geometry"] = 35
         findings.append(ForensicFinding(
             id="f-l2-laser", layer=2, severity="MEDIUM",
             title="Text baseline alignment needs review",
-            description="A text row has a geometric alignment anomaly. Font rendering, scaling, and OCR segmentation can also affect this heuristic.",
+            description="A text row has a geometric alignment anomaly. Font rendering, scaling, and component segmentation can also affect this heuristic.",
             metric_name="Maximum baseline deviation", metric_value=f"{layer2.max_baseline_drift_px:.1f}px",
             bounding_box=baseline_boxes[0] if baseline_boxes else None,
         ))
@@ -174,6 +174,10 @@ def calibrate_ensemble(
     synergy = CrossLayerSynergy(
         region_overlap_found=primary_locus is not None,
         primary_review_locus=primary_locus,
+        synergy_multiplier_applied=primary_locus is not None,
+        multiplier_factor=1.0,
+        max_iou=max((compute_box_iou(a,b) for a in layer1.bounding_boxes for b in layer2.bounding_boxes), default=0.0),
+        primary_forgery_locus=primary_locus,
         synergy_explanation=(
             "Copy-move and text-baseline indicators overlap; inspect this region."
             if primary_locus else "No overlapping high-specificity indicators detected."

@@ -1,0 +1,17 @@
+{
+  "status": "BLOCK",
+  "manifest_sha256": "90d497b5a2fb3f72da9b13b0af54efa2f1b2e5cf01fec7998366ba3f682d97b4",
+  "reasons": [
+    "Both classes required in test",
+    "Both classes required in train",
+    "Both classes required in validation",
+    "Cross-partition leakage: contributor",
+    "Cross-partition leakage: device",
+    "Fewer than 500 images: collection planning floor only, not statistical sufficiency.",
+    "Missing explicit permission evidence for intended use.",
+    "Need locked train/validation/test partitions.",
+    "Synthetic-only or mixed synthetic corpus is not approved as representative real-world validation."
+  ],
+  "trained": false,
+  "model_artifact": null
+}

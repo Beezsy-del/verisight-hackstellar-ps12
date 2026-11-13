@@ -1,0 +1,152 @@
+{
+  "base": "http://127.0.0.1:8002",
+  "checks": [
+    {
+      "name": "workbench startup",
+      "status": "PASS"
+    },
+    {
+      "name": "all image channels change",
+      "status": "PASS"
+    },
+    {
+      "name": "native zoom and fit",
+      "status": "PASS"
+    },
+    {
+      "name": "simple forensic and dossier",
+      "status": "PASS"
+    },
+    {
+      "name": "draft is not a subpoena",
+      "status": "PASS"
+    },
+    {
+      "name": "review memo print action and scientific labels",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile intake exposes a session-scoped handoff",
+      "status": "PASS"
+    },
+    {
+      "name": "recompression simulation uses real reanalysis",
+      "status": "PASS"
+    },
+    {
+      "name": "latest case wins and no stale dossier",
+      "status": "PASS"
+    },
+    {
+      "name": "upload clears old state and binds actual bytes",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1440x900",
+      "status": "PASS"
+    },
+    {
+      "name": "workbench 1440x900",
+      "status": "PASS"
+    },
+    {
+      "name": "evaluation 1440x900",
+      "status": "PASS"
+    },
+    {
+      "name": "response 1440x900",
+      "status": "PASS"
+    },
+    {
+      "name": "guide 1440x900",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1280x800",
+      "status": "PASS"
+    },
+    {
+      "name": "workbench 1280x800",
+      "status": "PASS"
+    },
+    {
+      "name": "evaluation 1280x800",
+      "status": "PASS"
+    },
+    {
+      "name": "response 1280x800",
+      "status": "PASS"
+    },
+    {
+      "name": "guide 1280x800",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1024x768",
+      "status": "PASS"
+    },
+    {
+      "name": "workbench 1024x768",
+      "status": "PASS"
+    },
+    {
+      "name": "evaluation 1024x768",
+      "status": "PASS"
+    },
+    {
+      "name": "response 1024x768",
+      "status": "PASS"
+    },
+    {
+      "name": "guide 1024x768",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 390x844",
+      "status": "PASS"
+    },
+    {
+      "name": "workbench 390x844",
+      "status": "PASS"
+    },
+    {
+      "name": "evaluation 390x844",
+      "status": "PASS"
+    },
+    {
+      "name": "response 390x844",
+      "status": "PASS"
+    },
+    {
+      "name": "guide 390x844",
+      "status": "PASS"
+    },
+    {
+      "name": "evaluation controls unavailable rather than fabricated",
+      "status": "PASS"
+    },
+    {
+      "name": "incident extraction and complaint workflow",
+      "status": "PASS"
+    },
+    {
+      "name": "complaint edit, PDF download and persistent case notes",
+      "status": "PASS"
+    },
+    {
+      "name": "microphone denied retains typing",
+      "status": "PASS"
+    },
+    {
+      "name": "no uncaught browser errors",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "networkFailures": [
+    {
+      "url": "http://127.0.0.1:8002/api/analyze?media=urls",
+      "status": 422
+    }
+  ]
+}

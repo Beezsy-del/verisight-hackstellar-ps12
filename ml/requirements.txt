@@ -1,0 +1,11 @@
+# VeriSight ML Laboratory Pinned Dependencies
+# Python 3.12 64-bit Windows Environment
+numpy>=2.0.0
+scipy>=1.14.0
+scikit-learn>=1.5.0
+pillow>=10.4.0
+opencv-python-headless>=4.10.0
+PyWavelets>=1.7.0
+pydantic>=2.8.0
+joblib>=1.4.0
+pytest>=8.0.0

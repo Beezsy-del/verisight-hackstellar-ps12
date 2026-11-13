@@ -51,7 +51,7 @@ def test_baseline_laser_clean():
 
     score, max_drift, lasers, boxes, details = run_baseline_laser_audit(tokens, 600, 200)
     assert max_drift < 0.5
-    assert not any(l.is_alignment_outlier for l in lasers)
+    assert not any(l.is_tampered for l in lasers)
 
 
 def test_baseline_laser_spliced():
@@ -71,7 +71,7 @@ def test_baseline_laser_spliced():
 
     score, max_drift, lasers, boxes, details = run_baseline_laser_audit(tokens, 600, 200)
     assert max_drift >= 3.0
-    assert any(l.is_alignment_outlier for l in lasers)
+    assert any(l.is_tampered for l in lasers)
 
 
 def test_cielab_patch_analysis():

@@ -43,7 +43,7 @@ def test_unsupported_and_tiny_images_rejected():
             decode_image(data)
 
 def test_mobile_poll_cannot_read_or_clear_another_session():
-    from app.api import endpoints
+    from app.api import cloud_endpoints as endpoints
     a, b = str(uuid4()), str(uuid4())
     from time import monotonic
     from app.core.schemas import AnalysisGate
@@ -102,7 +102,7 @@ def test_difference_heatmap_saturates_without_integer_wrap(monkeypatch):
     from app.services.forensic.pipeline import analyze_screenshot
     data = image_bytes()
     report = analyze_screenshot(data)
-    monkeypatch.setattr('app.services.forensic.pipeline.analyze_screenshot', lambda **kw: report)
+    monkeypatch.setattr('app.simulation.whatsapp_pipeline.analyze_screenshot', lambda **kw: report)
     decoded = iter([np.full((64,64,3), 255, np.uint8), np.zeros((64,64,3), np.uint8)])
     monkeypatch.setattr(cv2, 'imdecode', lambda *a: next(decoded))
     captured=[]

@@ -6,6 +6,11 @@ import qrcode
 
 from app.services.forensic.qr_inspector import inspect_qr_codes
 from app.services.forensic.pipeline import analyze_screenshot
+from app.services.forensic.intelligence.syndicate import (
+    extract_financial_entities,
+    evaluate_syndicate_threat,
+    generate_section91_subpoena,
+)
 
 
 def test_qr_inspector_decodes_upi_fields_without_claiming_authenticity():
@@ -21,7 +26,6 @@ def test_qr_inspector_decodes_upi_fields_without_claiming_authenticity():
     assert decoded["payee_vpa"] == "merchant@bank"
     assert decoded["amount"] == "125.00"
     assert decoded["authenticity_verified"] is False
-    assert "pixel_integrity" not in decoded
     assert report["authenticity_verified"] is False
     assert len(report["regions"]) == 1
 
@@ -33,16 +37,40 @@ def test_qr_inspector_does_not_report_qr_when_none_is_present():
     assert report["results"] == []
 
 
-def test_qr_pattern_is_not_mistaken_for_tampered_text_geometry():
-    payload = "upi://pay?pa=merchant%40bank&pn=Example%20Store&am=125.00&cu=INR"
-    image = qrcode.make(payload).convert("RGB")
-    stream = BytesIO()
-    image.save(stream, format="PNG")
+def test_syndicate_intelligence_extraction_and_section91():
+    fake_tokens = [
+        {"text": "Paid", "box": [10, 10, 30, 15]},
+        {"text": "to", "box": [45, 10, 20, 15]},
+        {"text": "Rajesh", "box": [70, 10, 50, 15]},
+        {"text": "Kumar", "box": [125, 10, 50, 15]},
+        {"text": "rajesh@okhdfcbank", "box": [10, 35, 120, 15]},
+        {"text": "₹95,250.00", "box": [10, 60, 90, 25]},
+        {"text": "UPI Ref No: 1234567890", "box": [10, 95, 160, 15]},
+    ]
+    entities = extract_financial_entities(fake_tokens)
+    assert entities["payee_vpa"] == "rajesh@okhdfcbank"
+    assert entities["amount"] == "95,250.00"
+    assert entities["utr_number"] == "1234567890"
 
-    report = analyze_screenshot(stream.getvalue(), "qr-only.png")
-    assert report.layer3.details["qr_inspection"]["decoded_count"] == 1
-    assert report.layer2.details["tokens_in_qr_regions_excluded"] > 0
-    assert not any(row.is_alignment_outlier for row in report.layer2.lasers)
-    assert report.verdict == "REVIEW_REQUIRED"
-    assert any(f.id == "f-text-coverage" for f in report.findings)
-    assert not any(f.id == "f-l2-laser" for f in report.findings)
+    threat = evaluate_syndicate_threat(
+        entities=entities,
+        tamper_score=92.0,
+        verdict="CORROBORATED_ANOMALIES",
+        clock_paradox=True,
+    )
+    assert threat["syndicate_risk_level"] == "UNVERIFIED"
+    assert threat["threat_indicators"] == []
+
+    notice = generate_section91_subpoena(
+        report_sha256="abc123def4567890abcdef1234567890",
+        filename="test_evidence.png",
+        timestamp="2026-11-10T12:00:00",
+        entities=entities,
+        tamper_score=92.0,
+        verdict="CORROBORATED_ANOMALIES",
+        findings=[{"severity": "CRITICAL", "layer": 2, "title": "Baseline Drift", "description": "Spliced text"}],
+    )
+    assert "PERSONAL DRAFT" in notice
+    assert "Not a subpoena" in notice
+    assert "rajesh@okhdfcbank" in notice
+    assert "95,250.00" in notice

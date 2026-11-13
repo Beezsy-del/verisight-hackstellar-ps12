@@ -44,7 +44,6 @@ def inspect_qr_codes(img_bgr: np.ndarray) -> dict[str, object]:
     # Remove duplicates while retaining order and bound response size.
     payloads = list(dict.fromkeys(value[:2048] for value in decoded))[:8]
     results = [_describe_payload(value) for value in payloads]
-
     return {
         "scanner": "OpenCV QR decoder",
         "decoded_count": len(results),

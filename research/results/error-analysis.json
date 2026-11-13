@@ -1,0 +1,818 @@
+[
+  {
+    "sample_id": "original-00-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-00-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-00-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-00-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-00-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-00-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "poor image quality or unreadable text",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-01-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "poor image quality or unreadable text",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-0-original",
+    "kind": "FP",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 10
+    },
+    "candidate_score": 20.0,
+    "label": 0
+  },
+  {
+    "sample_id": "original-02-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-02-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-03-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-04-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-05-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-06-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-07-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-08-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "poor image quality or unreadable text",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-original",
+    "kind": "FN",
+    "condition": "original",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-jpeg75",
+    "kind": "FN",
+    "condition": "jpeg75",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 2.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-resize_jpeg",
+    "kind": "FN",
+    "condition": "resize_jpeg",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.3,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-multi_stage",
+    "kind": "FN",
+    "condition": "multi_stage",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-recapture_proxy",
+    "kind": "FN",
+    "condition": "recapture_proxy",
+    "hypothesis": "weak local evidence / unfamiliar layout",
+    "features": {
+      "baseline_drift": 1.5,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0.0,
+    "label": 1
+  },
+  {
+    "sample_id": "original-09-1-low_quality",
+    "kind": "FN",
+    "condition": "low_quality",
+    "hypothesis": "poor image quality or unreadable text",
+    "features": {
+      "baseline_drift": 0.0,
+      "baseline_rows": 0,
+      "ela": 0.2,
+      "ela_blocks": 0,
+      "noise": 12.0,
+      "clones": 0
+    },
+    "candidate_score": 0,
+    "label": 1
+  }
+]

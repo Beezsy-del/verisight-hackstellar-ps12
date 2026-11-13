@@ -1,83 +1,19 @@
+import { RobustnessResearch } from "./RobustnessResearch";
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, Database, ShieldAlert } from "lucide-react";
-import {
-  fetchModelEvaluation,
-  fetchModelStatus,
-  ModelEvaluationReport,
-  ModelStatus,
-} from "../services/api";
-
-interface EvaluationDashboardProps {
-  onNavigateWorkbench: () => void;
-}
-
-export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
-  onNavigateWorkbench,
-}) => {
-  const [status, setStatus] = useState<ModelStatus | null>(null);
-  const [evaluation, setEvaluation] = useState<ModelEvaluationReport | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    Promise.all([fetchModelStatus(), fetchModelEvaluation()])
-      .then(([model, report]) => {
-        if (!active) return;
-        setStatus(model);
-        setEvaluation(report);
-      })
-      .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : "Status unavailable");
-      });
-    return () => { active = false; };
-  }, []);
-
-  return (
-    <main className="flex-1 overflow-y-auto bg-[#060911] p-4 text-slate-100 sm:p-6 lg:p-8">
-      <section className="mx-auto max-w-5xl space-y-6">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-sky-400">Forensic transparency</p>
-            <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Analyzer status & evaluation</h1>
-          </div>
-          <button onClick={onNavigateWorkbench} className="flex items-center gap-2 self-start rounded-lg border border-sky-500/40 bg-sky-500/15 px-4 py-2 text-sm text-sky-200 hover:bg-sky-500/25">
-            Open workbench <ArrowRight className="h-4 w-4" />
-          </button>
-        </header>
-
-        <div className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-relaxed text-amber-100">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-300" />
-          <p>No trained or calibrated authenticity classifier is deployed. VeriSight reports heuristic review cues; it does not estimate a validated probability, prove an image is genuine or edited, or verify a payment.</p>
-        </div>
-
-        {error ? (
-          <div role="alert" className="rounded-xl border border-red-500/30 bg-red-950/30 p-4 text-sm text-red-200">Could not load analyzer status: {error}</div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            <article className="rounded-xl border border-white/10 bg-[#0D1424] p-5">
-              <div className="flex items-center gap-2 text-slate-300"><ShieldAlert className="h-5 w-5 text-sky-300" /> Deployed analyzer</div>
-              <p className="mt-4 font-mono text-lg font-semibold text-white">{status?.status ?? "Loading…"}</p>
-              <dl className="mt-4 space-y-2 text-sm text-slate-400">
-                <div className="flex justify-between gap-4"><dt>Method</dt><dd className="text-right text-slate-200">{status?.architecture ?? "—"}</dd></div>
-                <div className="flex justify-between gap-4"><dt>Calibration</dt><dd className="text-right text-amber-300">{status?.calibration_status ?? "—"}</dd></div>
-                <div className="flex justify-between gap-4"><dt>Classifier</dt><dd className="text-right text-slate-200">None deployed</dd></div>
-              </dl>
-            </article>
-
-            <article className="rounded-xl border border-white/10 bg-[#0D1424] p-5">
-              <div className="flex items-center gap-2 text-slate-300"><Database className="h-5 w-5 text-sky-300" /> Evaluation data</div>
-              <p className="mt-4 font-mono text-lg font-semibold text-white">{evaluation?.status ?? "Loading…"}</p>
-              <dl className="mt-4 space-y-2 text-sm text-slate-400">
-                <div className="flex justify-between"><dt>Bundled synthetic fixtures</dt><dd className="text-slate-200">{evaluation?.dataset_summary.synthetic_fixtures ?? "—"}</dd></div>
-                <div className="flex justify-between"><dt>Independent labeled references</dt><dd className="text-slate-200">{evaluation ? evaluation.dataset_summary.independent_authentic_references + evaluation.dataset_summary.independent_manipulated_references : "—"}</dd></div>
-                <div className="flex justify-between"><dt>Held-out test cases</dt><dd className="text-slate-200">{evaluation?.dataset_summary.held_out_test_samples ?? "—"}</dd></div>
-                <div className="flex justify-between"><dt>Accuracy / calibrated confidence</dt><dd className="text-amber-300">Not available</dd></div>
-              </dl>
-            </article>
-          </div>
-        )}
-        {status && <p className="text-xs leading-relaxed text-slate-500">{status.message} {evaluation?.message}</p>}
-      </section>
-    </main>
-  );
+import { fetchModelEvaluation, fetchModelStatus, ModelStatus } from "../services/api";
+export const EvaluationDashboard: React.FC<{onNavigateWorkbench:()=>void}> = ({onNavigateWorkbench}) => {
+  const [status,setStatus]=useState<ModelStatus|null>(null);
+  const [message,setMessage]=useState("Checking evaluation availability…");
+  const [error,setError]=useState(false);
+  const [attempt,setAttempt]=useState(0);
+  useEffect(()=>{let active=true; Promise.all([fetchModelStatus(),fetchModelEvaluation()]).then(([s,e])=>{if(active){setStatus(s);setMessage(e.message || "Evaluation unavailable");setError(false);}}).catch(e=>{if(active){setError(true);setMessage(e.message);}});return()=>{active=false;};},[attempt]);
+  return <main className="page-scroll"><div className="page-container space-y-6">
+    <div><p className="eyebrow">Evaluation & Research</p><h1>Evidence before accuracy claims</h1><p className="text-slate-400 mt-2">Operational image review uses heuristics. No validated probability of fraud or authenticity is available.</p></div>
+    <section className="panel" role={error?"alert":"status"}><h2>{error?"Evaluation service unavailable":"Representative evaluation unavailable"}</h2><p>{message}</p>{error&&<button onClick={()=>setAttempt(a=>a+1)}>Retry evaluation</button>}</section>
+    <section className="panel"><h2>Model registry</h2><dl className="grid gap-3 sm:grid-cols-2"><div><dt>Active engine</dt><dd>{status?.active_model_id || "Checking…"}</dd></div><div><dt>Version</dt><dd>{status?.active_model_version || "Unavailable"}</dd></div><div><dt>Calibration</dt><dd>{status?.calibration_status || "Unavailable"}</dd></div><div><dt>Release gate</dt><dd className="text-amber-300">BLOCKED — representative validation required</dd></div></dl></section>
+    <section className="panel"><h2>Dataset and operating point</h2><label>Dataset<select disabled aria-label="Evaluation dataset"><option>No eligible evaluation run</option></select></label><label className="block mt-4">Operating threshold<input disabled aria-label="Operating threshold" type="range" min="0" max="100" /></label><p>Threshold controls and ROC/PR charts require per-image labels and predictions from the same locked evaluation run. They cannot be reconstructed from hardcoded summary numbers.</p><div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">{["Sensitivity","Specificity","Precision","False-positive rate","ROC-AUC","PR-AUC","Calibration","Confusion matrix"].map(x=><div className="rounded border border-slate-700 p-3" key={x}><div>{x}</div><strong className="text-slate-400">Unavailable</strong></div>)}</div></section>
+    <RobustnessResearch/>
+    <section className="panel"><h2>Research assets and limitations</h2><p>The repository includes 27 synthetic examples and experimental fusion checkpoints. Shared templates, missing device/contributor/edit-session grouping, and ground-truth metadata used as features prevent these artifacts from establishing real-world accuracy. Historical external-corpus claims lack a reproducible authorized corpus in this checkout.</p><p>No new training was performed. Release requires authorized representative data, grouped splits, validation-only threshold selection, untouched test results, and calibration checks.</p></section>
+    <button className="action-button" onClick={onNavigateWorkbench}>Return to workbench</button>
+  </div></main>;
 };

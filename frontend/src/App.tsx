@@ -1,9 +1,11 @@
 import { loadSimulationSource } from "./services/simulationSource";
-import { ReviewLimitations } from "./components/ReviewLimitations";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { NavigationHeader, AppRoute } from "./components/NavigationHeader";
 import { ProductOverview } from "./components/ProductOverview";
 import { EvaluationDashboard } from "./components/EvaluationDashboard";
+import { WhyVerisight } from "./components/WhyVerisight";
+import { ResponseModule } from "./components/response/ResponseModule";
+import { AttachedForensicContext } from "./types/response";
 import { TopCommandBar } from "./components/TopCommandBar";
 import { ForensicViewer, ViewMode } from "./components/ForensicViewer";
 import { RiskDossierSidebar } from "./components/RiskDossierSidebar";
@@ -14,6 +16,7 @@ import { MobileUploadView } from "./components/MobileUploadView";
 import { ForensicReportModal } from "./components/ForensicReportModal";
 import { Section91NoticeModal } from "./components/Section91NoticeModal";
 import { KeyboardShortcutsModal } from "./components/KeyboardShortcutsModal";
+import { SkillPipelineHUD } from "./components/SkillPipelineHUD";
 import { Toaster, toast } from "sonner";
 import { UploadCloud } from "lucide-react";
 import {
@@ -34,6 +37,8 @@ const getRouteFromLocation = (): AppRoute => {
   const path = window.location.pathname;
   if (path === "/workbench") return "/workbench";
   if (path === "/evaluation") return "/evaluation";
+  if (path === "/why-verisight" || path === "/guide") return "/guide";
+  if (path === "/response") return "/response";
   return "/";
 };
 
@@ -55,7 +60,7 @@ const MainProductApplication: React.FC = () => {
   // Shared Data State
   const [demoSamples, setDemoSamples] = useState<DemoSampleMeta[]>([]);
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(() => {
-    return new URLSearchParams(window.location.search).get("case") || "sample_1";
+    return new URLSearchParams(window.location.search).get("case") || "sample_clean";
   });
   const [report, setReport] = useState<ForensicAnalysisReport | null>(null);
   const [appError, setAppError] = useState<string | null>(null);
@@ -84,51 +89,81 @@ const MainProductApplication: React.FC = () => {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
   const [isSection91ModalOpen, setIsSection91ModalOpen] = useState<boolean>(false);
+  const [pipelineStage, setPipelineStage] = useState<number>(4);
+  const [isPipelineRunning, setIsPipelineRunning] = useState<boolean>(false);
 
-  const requestVersion = useRef(0);
-  const sourceFile = useRef<File | null>(null);
+  // Response & Guidance Linked Forensic Context
+  const [attachedForensicContext, setAttachedForensicContext] = useState<AttachedForensicContext | null>(null);
 
-  // Handle selecting a golden demo sample
-  const handleSelectSample = useCallback(async (sampleId: string) => {
-    const version = ++requestVersion.current;
-    sourceFile.current = null;
-    setReport(null);
-    setSelectedSampleId(sampleId);
-    setSelectedLocus(null);
-    setIsLoading(true);
-    setAppError(null);
-
-    try {
-      const res = await analyzeDemoSample(sampleId);
-      if (version !== requestVersion.current) return;
-      setReport(res);
-    } catch (err) {
-      if (version !== requestVersion.current) return;
-      setAppError(
-        `Sample analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
-      toast.error(`Analysis failed for ${sampleId}`);
-    } finally {
-      if (version === requestVersion.current) setIsLoading(false);
-    }
+  const originalUpload = useRef<File | null>(null);
+  const activeRequest = useRef<{ id: number; controller: AbortController | null }>({ id: 0, controller: null });
+  const [backendStatus, setBackendStatus] = useState<"CHECKING" | "HEALTHY" | "UNAVAILABLE" | "DEGRADED">("CHECKING");
+  const beginAnalysis = useCallback(() => {
+    originalUpload.current = null;
+    activeRequest.current.controller?.abort();
+    const controller = new AbortController();
+    const id = activeRequest.current.id + 1;
+    activeRequest.current = { id, controller };
+    setReport(null); setSelectedLocus(null); setWhatsAppDat(null);
+    setIsReportModalOpen(false); setIsSection91ModalOpen(false); setIsWhatsAppModalOpen(false);
+    setAttachedForensicContext(null); setViewMode("ORIGINAL");
+    setIsLoading(true); setAppError(null);
+    return { id, controller };
   }, []);
+  const handleSelectSample = useCallback(async (sampleId: string) => {
+    const { id, controller } = beginAnalysis();
+    setSelectedSampleId(sampleId);
+    try {
+      const result = await analyzeDemoSample(sampleId, controller.signal);
+      if (activeRequest.current.id === id) setReport(result);
+    } catch (err) {
+      if (activeRequest.current.id === id && !controller.signal.aborted)
+        setAppError(`Sample analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      if (activeRequest.current.id === id) setIsLoading(false);
+    }
+  }, [beginAnalysis]);
+  useEffect(() => () => activeRequest.current.controller?.abort(), []);
 
   // Synchronized Client-Side Navigation
   const handleNavigate = useCallback(
     (route: AppRoute, query?: Record<string, string>) => {
-      let targetUrl = route;
+      let resolvedRoute = route;
+      if (route === "/why-verisight") resolvedRoute = "/guide";
+      let targetUrl = resolvedRoute;
       if (query && Object.keys(query).length > 0) {
         const params = new URLSearchParams(query);
         targetUrl += `?${params.toString()}`;
       }
       window.history.pushState({}, "", targetUrl);
-      setCurrentRoute(route);
+      setCurrentRoute(resolvedRoute);
 
       if (query?.case) {
         void handleSelectSample(query.case);
       }
     },
     [handleSelectSample]
+  );
+
+  // Contextual handoff to Response & Guidance with active investigation facts preserved
+  const handleOpenResponseGuidance = useCallback(
+    (targetReport: ForensicAnalysisReport) => {
+      setAttachedForensicContext({
+        case_id: `VS-CASE-${targetReport.file_sha256.slice(0, 8).toUpperCase()}`,
+        filename: targetReport.filename || "screenshot.png",
+        file_sha256: targetReport.file_sha256,
+        image_width: targetReport.image_width,
+        image_height: targetReport.image_height,
+        overall_tamper_score: targetReport.overall_tamper_score,
+        verdict: targetReport.verdict,
+        findings: targetReport.findings,
+        synergy: targetReport.synergy,
+        limitations: "Observations reflect statistical signal anomalies in image containers.",
+      });
+      handleNavigate("/response");
+      toast("Context preserved: Entered Response & Guidance");
+    },
+    [handleNavigate]
   );
 
   // Listen to browser Back/Forward buttons
@@ -149,10 +184,10 @@ const MainProductApplication: React.FC = () => {
     let active = true;
     fetchHealth()
       .then((health) => {
-        if (active) setDatabaseStatus(health.database);
+        if (active) { setDatabaseStatus(health.database || "NOT_CONFIGURED"); setBackendStatus(health.status === "HEALTHY" ? "HEALTHY" : "DEGRADED"); }
       })
       .catch(() => {
-        if (active) setDatabaseStatus("UNAVAILABLE");
+        if (active) { setDatabaseStatus("UNAVAILABLE"); setBackendStatus("UNAVAILABLE"); }
       });
 
     const catalogRequest = fetchDemoSamples()
@@ -172,13 +207,21 @@ const MainProductApplication: React.FC = () => {
     void catalogRequest;
 
     // Load initial sample
-    const initCase = new URLSearchParams(window.location.search).get("case") || "sample_1";
+    const initCase = new URLSearchParams(window.location.search).get("case") || "sample_clean";
     void handleSelectSample(initCase);
 
     return () => {
       active = false;
     };
   }, [demoRetry, handleSelectSample]);
+
+  useEffect(() => {
+    let active=true;
+    const interval=window.setInterval(()=>fetchHealth().then(health=>{
+      if(active){setBackendStatus(health.status === "HEALTHY" ? "HEALTHY" : "DEGRADED");setDatabaseStatus(health.database || "NOT_CONFIGURED");}
+    }).catch(()=>{if(active)setBackendStatus("UNAVAILABLE");}),30000);
+    return()=>{active=false;window.clearInterval(interval);};
+  },[]);
 
   // Global Keyboard Navigation Shortcuts Handler
   useEffect(() => {
@@ -253,34 +296,19 @@ const MainProductApplication: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleSelectSample, isAdvancedMode, currentRoute, handleNavigate]);
 
-  // Handle custom screenshot upload
   const handleFileUpload = async (file: File) => {
-    const version = ++requestVersion.current;
-    sourceFile.current = file;
-    setReport(null);
+    const { id, controller } = beginAnalysis();
     setSelectedSampleId(null);
-    setSelectedLocus(null);
-    setIsLoading(true);
-    setAppError(null);
-
-    // Switch to workbench if not already there
-    if (currentRoute !== "/workbench") {
-      handleNavigate("/workbench");
-    }
-
+    if (currentRoute !== "/workbench") handleNavigate("/workbench");
     try {
-      const res = await analyzeUpload(file);
-      if (version !== requestVersion.current) return;
-      setReport(res);
-      toast.success(`Analyzed screenshot: ${file.name}`);
+      if (file.size > 20 * 1024 * 1024) throw new Error("Choose an image under 20 MB.");
+      const result = await analyzeUpload(file, controller.signal);
+      if (activeRequest.current.id === id) { originalUpload.current = file; setReport(result); toast.success(`Analyzed ${file.name}`); }
     } catch (err) {
-      if (version !== requestVersion.current) return;
-      setAppError(
-        `Upload analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
-      toast.error("Upload analysis failed");
+      if (activeRequest.current.id === id && !controller.signal.aborted)
+        setAppError(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
-      if (version === requestVersion.current) setIsLoading(false);
+      if (activeRequest.current.id === id) setIsLoading(false);
     }
   };
 
@@ -328,21 +356,17 @@ const MainProductApplication: React.FC = () => {
   // Handle WhatsApp simulation on current screenshot
   const handleTriggerWhatsAppSimulation = async () => {
     if (!report) return;
+    const simulationRequestId = activeRequest.current.id;
     setIsWhatsAppModalOpen(true);
     setIsWhatsAppLoading(true);
-    setWhatsAppDat(null);
 
     try {
-      const sample = selectedSampleId
-        ? demoSamples.find(item => item.id === selectedSampleId)
-        : undefined;
-      const simulationSource = await loadSimulationSource(
-        sourceFile.current, sample?.url, report.original_image_b64,
-      );
+      const blob = await loadSimulationSource(originalUpload.current, demoSamples.find(sample => sample.id === selectedSampleId)?.url, report.original_image_b64);
       const simRes = await simulateWhatsApp(
-        simulationSource,
+        blob,
         report.filename || "screenshot.png"
       );
+      if (simulationRequestId !== activeRequest.current.id) return;
       setWhatsAppDat(simRes);
       toast.success("WhatsApp simulation completed");
     } catch (err) {
@@ -357,13 +381,11 @@ const MainProductApplication: React.FC = () => {
 
   // Handle stage judge live mobile upload arrival
   const handleMobileUploadReceived = (newReport: ForensicAnalysisReport) => {
-    ++requestVersion.current;
-    sourceFile.current = null;
-    setIsLoading(false);
-    setAppError(null);
+    beginAnalysis();
     setSelectedSampleId(null);
     setSelectedLocus(null);
     setReport(newReport);
+    setIsLoading(false);
     if (currentRoute !== "/workbench") {
       handleNavigate("/workbench");
     }
@@ -383,6 +405,7 @@ const MainProductApplication: React.FC = () => {
         currentRoute={currentRoute}
         onNavigate={handleNavigate}
         databaseStatus={databaseStatus}
+        backendStatus={backendStatus}
       />
 
       {/* 2. Main Routed View Area */}
@@ -397,8 +420,11 @@ const MainProductApplication: React.FC = () => {
 
         {/* Experience B: Forensic Workbench */}
         {currentRoute === "/workbench" && (
-          <AmbientThreatBackground threatScore={report?.overall_tamper_score || 0}>
-            <div className="shrink-0 px-2 py-1"><ReviewLimitations /></div>
+          <AmbientThreatBackground
+            threatScore={report?.overall_tamper_score || 0}
+            verdict={report?.verdict}
+            isLoading={isLoading}
+          >
             {/* Top Workbench Command Bar */}
             <TopCommandBar
               databaseStatus={databaseStatus}
@@ -409,12 +435,17 @@ const MainProductApplication: React.FC = () => {
               onOpenWhatsAppModal={handleTriggerWhatsAppSimulation}
               onOpenMobileModal={() => setIsMobileModalOpen(true)}
               onOpenReportModal={() => setIsReportModalOpen(true)}
-              onOpenSection91Modal={report?.section91_notice ? () => setIsSection91ModalOpen(true) : undefined}
+              onOpenSection91Modal={() => setIsSection91ModalOpen(true)}
               onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
+              onOpenResponse={() => report && handleOpenResponseGuidance(report)}
               isAdvancedMode={isAdvancedMode}
               onToggleAdvancedMode={() => setIsAdvancedMode((prev) => !prev)}
               isLoading={isLoading}
+              hasReport={!!report}
             />
+
+            {/* Active 4-Skill Telemetry HUD */}
+            {isLoading && <div role="status" className="px-4 py-2 text-sm text-sky-300">Analyzing image… Waiting for measured results.</div>}
 
             {/* Error Banner */}
             {appError && (
@@ -462,7 +493,8 @@ const MainProductApplication: React.FC = () => {
                 onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
                 isAdvancedMode={isAdvancedMode}
                 onOpenReport={() => setIsReportModalOpen(true)}
-                onOpenSection91={report?.section91_notice ? () => setIsSection91ModalOpen(true) : undefined}
+                onOpenSection91={() => setIsSection91ModalOpen(true)}
+                onOpenResponseGuidance={handleOpenResponseGuidance}
               />
             </main>
           </AmbientThreatBackground>
@@ -472,6 +504,22 @@ const MainProductApplication: React.FC = () => {
         {currentRoute === "/evaluation" && (
           <EvaluationDashboard
             onNavigateWorkbench={() => handleNavigate("/workbench")}
+          />
+        )}
+
+        {/* Experience D: Why VeriSight & Competitive Benchmarks */}
+        {currentRoute === "/guide" && (
+          <WhyVerisight
+            onNavigateWorkbench={() => handleNavigate("/workbench")}
+          />
+        )}
+
+        {/* Experience E: Response & Guidance (Native Module) */}
+        {currentRoute === "/response" && (
+          <ResponseModule
+            onNavigateWorkbench={() => handleNavigate("/workbench")}
+            attachedForensicContext={attachedForensicContext}
+            onClearForensicContext={() => setAttachedForensicContext(null)}
           />
         )}
       </div>
@@ -493,11 +541,12 @@ const MainProductApplication: React.FC = () => {
 
       {/* Modals */}
       <WhatsAppSimulatorModal
+        originalSrc={report?.original_image_b64 || ""}
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
         simulationData={whatsAppData}
         isLoading={isWhatsAppLoading}
-        onApplyLaunderedImage={(newReport) => { sourceFile.current = null; setSelectedSampleId(null); setReport(newReport); }}
+        onApplyLaunderedImage={handleMobileUploadReceived}
       />
 
       <MobileUploadModal

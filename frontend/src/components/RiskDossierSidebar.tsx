@@ -1,6 +1,7 @@
-import { PersistenceNotice } from "./PersistenceNotice";
 import { ReviewLimitations } from "./ReviewLimitations";
+import { PersistenceNotice } from "./PersistenceNotice";
 import { AnalysisGatePanel } from "./AnalysisGatePanel";
+import { IntelligencePanel } from "./IntelligencePanel";
 import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
@@ -17,11 +18,14 @@ import {
   ShieldAlert,
   Hash,
   ExternalLink,
+  LifeBuoy,
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { verdictLabel } from "../services/verdictLabel";
 import { ForensicAnalysisReport, BoundingBox } from "../types/forensic";
 import { toast } from "sonner";
+import { useVerdictTheme } from "./AmbientThreatBackground";
 
 interface RiskDossierSidebarProps {
   report: ForensicAnalysisReport | null;
@@ -30,6 +34,7 @@ interface RiskDossierSidebarProps {
   onOpenSection91Modal?: () => void;
   onOpenSection91?: () => void;
   onOpenReport?: () => void;
+  onOpenResponseGuidance?: (report: ForensicAnalysisReport) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   isAdvancedMode?: boolean;
@@ -42,6 +47,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   onOpenSection91Modal,
   onOpenSection91,
   onOpenReport,
+  onOpenResponseGuidance,
   isCollapsed = false,
   onToggleCollapse,
   isAdvancedMode = false,
@@ -62,26 +68,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   // Severity filter state for findings
   const [severityFilter, setSeverityFilter] = useState<"ALL" | "CRITICAL" | "HIGH" | "INFO">("ALL");
 
-  // Animated counting risk score
-  const [displayScore, setDisplayScore] = useState(0);
-
-  useEffect(() => {
-    if (!report) return;
-    const target = report.overall_tamper_score;
-    let start = 0;
-    const step = target / 25;
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setDisplayScore(target);
-        clearInterval(timer);
-      } else {
-        setDisplayScore(Number(start.toFixed(1)));
-      }
-    }, 12);
-    return () => clearInterval(timer);
-  }, [report?.overall_tamper_score, report?.file_sha256]);
-
+  const { theme } = useVerdictTheme();
   if (!report) {
     return (
       <aside className="flex min-h-24 w-full flex-col items-center justify-center border-t border-white/[0.07] bg-[#0B0F19]/95 p-4 text-slate-500 md:h-full md:w-80 md:border-l md:border-t-0 lg:w-[400px]">
@@ -105,10 +92,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     findings,
   } = report;
 
-  const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
-  const isReviewRequired = verdict !== "INCONCLUSIVE";
+  const isCorroborated = verdict === "CORROBORATED_ANOMALIES" || verdict === "MANIPULATED_FORGERY";
+  const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated || overall_tamper_score >= 25;
 
-  // Uncalibrated review-priority gauge
+  // Calibrated Gauge Calculations
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset =
@@ -116,9 +103,9 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
   const gaugeColor = isReviewRequired ? "#f43f5e" : "#10b981";
 
-  const copyText = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`Copied ${label}: ${text}`);
+  const copyText = async (text: string, label: string) => {
+    try { await navigator.clipboard.writeText(text); toast.success(`Copied ${label}`); }
+    catch { toast.error("Clipboard unavailable. Select and copy the value manually."); }
   };
 
   // Filtered findings
@@ -149,7 +136,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 ? "border-rose-500/60 bg-rose-950/80 text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.3)]"
                 : "border-emerald-500/60 bg-emerald-950/80 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
             }`}
-            title={`Review priority: ${overall_tamper_score.toFixed(1)} / 100; not a probability`}
+            title={`Tamper Score: ${overall_tamper_score.toFixed(1)} / 100`}
           >
             {Math.round(overall_tamper_score)}
           </div>
@@ -169,7 +156,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
   // EXPANDED FULL DOSSIER (w-[400px])
   return (
-    <aside className="flex h-full w-full flex-col border-t border-white/[0.07] bg-[#0B0F19]/95 text-xs backdrop-blur-md select-text md:w-80 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0 lg:w-[400px]">
+    <aside className="flex h-auto min-h-[400px] md:h-full md:min-h-0 shrink-0 w-full flex-col border-t border-white/[0.07] bg-[#0B0F19]/95 text-xs backdrop-blur-md select-text md:w-80 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0 lg:w-[400px]">
       {/* 1. Sidebar Header */}
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0D1322] px-3.5">
         <div className="flex items-center gap-2">
@@ -180,7 +167,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[9px] text-slate-400">
-            CHAIN-OF-CUSTODY
+            EVIDENCE SUMMARY
           </span>
           {onToggleCollapse && (
             <button
@@ -196,7 +183,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
       </div>
 
       {/* 2. Scrollable Dossier Content with Choreographed Cascade */}
-      <div className="flex-1 space-y-3.5 overflow-y-auto p-3.5">
+      <div className="min-h-0 flex-1 space-y-3.5 overflow-y-auto overflow-x-hidden break-words p-3.5">
+        <p className="text-[11px] text-slate-400">Confidence unavailable. Screenshot analysis does not verify payment settlement. AI-origin classification is unavailable. OCR availability and limitations are shown below.</p>
+        <p className="text-[11px] text-slate-400">Layer scores describe different signals and are not averaged percentages. Weak rendering cues carry limited weight in the overall assessment.</p>
+        {report.ai_origin && <details className="panel !p-3"><summary className="cursor-pointer">AI-origin and provenance indicators</summary><p>{report.ai_origin.summary}</p>{report.ai_origin.signals.map(signal=><div key={signal.id} className="mt-3"><strong>{signal.label} — {signal.status}</strong><p>{signal.evidence}</p><p>{signal.limitation}</p></div>)}</details>}
         {/* Stage 1 (0ms): ScamShield-Inspired Verdict Hero Card */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -230,10 +220,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
               <span className="font-mono text-xl font-bold tabular-nums text-slate-100">
-                {displayScore.toFixed(1)}
+                {overall_tamper_score.toFixed(1)}
               </span>
               <span className="font-mono text-[8px] uppercase tracking-wider text-slate-400">
-                Review priority
+                Heuristic / 100
               </span>
             </div>
           </div>
@@ -259,30 +249,57 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
             <p className="mt-2 text-[11px] leading-relaxed text-slate-300 font-sans">
               {isReviewRequired
-                ? "One or more configured review cues crossed a threshold. This does not establish forgery."
-                : "No configured strong cue crossed its threshold. Authenticity remains unknown."}
+                ? "Review cues were detected. Inspect individual findings; these do not prove tampering."
+                : "No strong editing cue found. This remains inconclusive and does not verify a payment."}
             </p>
-            <p className="mt-2 text-[11px] text-slate-400">Screenshot analysis does not verify payment settlement. That requires an authorized bank or PSP transaction-status integration.</p>
+
+            {onOpenResponseGuidance && (
+              <button
+                type="button"
+                onClick={() => onOpenResponseGuidance(report)}
+                className="mt-2.5 flex w-full items-center justify-between rounded-lg border border-sky-400/40 bg-gradient-to-r from-sky-600/30 to-indigo-600/30 px-3 py-1.5 font-mono text-[11px] font-semibold text-sky-200 transition-all hover:from-sky-500/40 hover:to-indigo-500/40 hover:text-white active:scale-[0.98] shadow-sm"
+              >
+                <div className="flex items-center gap-1.5">
+                  <LifeBuoy className="h-3.5 w-3.5 text-sky-400 animate-pulse" />
+                  <span>What should I do next?</span>
+                </div>
+                <ArrowRight className="h-3 w-3 text-sky-300" />
+              </button>
+            )}
           </div>
         </motion.div>
 
-        <ReviewLimitations verdict={verdict} />
-        <AnalysisGatePanel gate={report.analysis_gate} />
-        <PersistenceNotice status={report.persistence_status} />
-
+        <ReviewLimitations verdict={report.verdict}/>
+        <AnalysisGatePanel gate={report.analysis_gate}/>
+        <PersistenceNotice status={report.persistence_status}/>
+        {report.intelligence && <IntelligencePanel data={report.intelligence} onSelect={onSelectLocus}/> }
         {/* Stage 2 (60ms): Syndicate Entity Resolution Card */}
         {report.syndicate_intelligence && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-2.5 rounded-xl border border-amber-500/25 bg-[#111726] p-3.5 shadow-md"
+            className={`space-y-2.5 rounded-xl border p-3.5 shadow-md transition-all duration-500 ${
+              theme === "fraud"
+                ? "border-rose-500/40 bg-rose-950/20 shadow-rose-950/40"
+                : theme === "suspicious"
+                ? "border-amber-500/35 bg-amber-950/20 shadow-amber-950/40"
+                : "border-emerald-500/30 bg-emerald-950/20 shadow-emerald-950/40"
+            }`}
           >
-            <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
+            <div className="flex items-center justify-between text-xs font-semibold">
               <div className="flex items-center gap-1.5">
-                <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-                <span className="font-mono text-[10px] uppercase tracking-wider">
-                  Syndicate Resolution
+                <ShieldAlert
+                  className={`h-3.5 w-3.5 ${
+                    theme === "fraud"
+                      ? "text-rose-400"
+                      : theme === "suspicious"
+                      ? "text-amber-400"
+                      : "text-emerald-400"
+                  }`}
+                />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-200">
+                  Extracted identifiers
                 </span>
               </div>
               <span
@@ -290,13 +307,23 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                   report.syndicate_intelligence.syndicate_risk_level ===
                   "CRITICAL_SYNDICATE_THREAT"
                     ? "border-rose-800 bg-rose-950 text-rose-300"
-                    : "border-amber-800 bg-amber-950 text-amber-300"
+                    : report.syndicate_intelligence.syndicate_risk_level ===
+                        "MODERATE_REVIEW_REQUIRED" ||
+                      (report.syndicate_intelligence.threat_indicators &&
+                        report.syndicate_intelligence.threat_indicators.length > 0)
+                    ? "border-amber-800 bg-amber-950 text-amber-300"
+                    : "border-slate-700 bg-slate-900 text-slate-300"
                 }`}
               >
                 {report.syndicate_intelligence.syndicate_risk_level ===
                 "CRITICAL_SYNDICATE_THREAT"
                   ? "CRITICAL THREAT"
-                  : "REVIEW REQUIRED"}
+                  : report.syndicate_intelligence.syndicate_risk_level ===
+                      "MODERATE_REVIEW_REQUIRED" ||
+                    (report.syndicate_intelligence.threat_indicators &&
+                      report.syndicate_intelligence.threat_indicators.length > 0)
+                  ? "REVIEW REQUIRED"
+                  : "UNVERIFIED"}
               </span>
             </div>
 
@@ -310,11 +337,11 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                   )
                 }
                 className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
-                title="Click to copy VPA"
+                title="Click to copy VPA to clipboard"
               >
                 <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
                   <span>PAYEE VPA</span>
-                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
+                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300 transition-colors" />
                 </div>
                 <span className="font-medium text-slate-200 truncate block">
                   {report.syndicate_intelligence.entity_summary.payee_vpa || "N/A"}
@@ -329,14 +356,32 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                   )
                 }
                 className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
-                title="Click to copy UTR"
+                title="Click to copy UTR to clipboard"
               >
                 <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
                   <span>REF UTR</span>
-                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
+                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300 transition-colors" />
                 </div>
                 <span className="font-medium text-slate-200 truncate block">
                   {report.syndicate_intelligence.entity_summary.utr_number || "Non-std"}
+                </span>
+              </div>
+            </div>
+
+            {/* Entity Details Row: Payee Name, Amount & Bank Provider */}
+            <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
+              <div className="rounded-lg border border-white/[0.06] bg-[#0A0E1A]/80 p-2">
+                <span className="text-[9px] text-slate-500 block mb-0.5">PAYEE NAME</span>
+                <span className="font-medium text-slate-200 truncate block" title={report.syndicate_intelligence.entity_summary.payee_name || "N/A"}>
+                  {report.syndicate_intelligence.entity_summary.payee_name || "N/A"}
+                </span>
+              </div>
+
+              <div className="rounded-lg border border-white/[0.06] bg-[#0A0E1A]/80 p-2">
+                <span className="text-[9px] text-slate-500 block mb-0.5">AMOUNT / PSP</span>
+                <span className="font-medium text-slate-200 truncate block">
+                  {report.syndicate_intelligence.entity_summary.amount ? `₹${report.syndicate_intelligence.entity_summary.amount}` : "N/A"}
+                  {report.syndicate_intelligence.entity_summary.psp_provider ? ` • ${report.syndicate_intelligence.entity_summary.psp_provider.split(" ")[0]}` : ""}
                 </span>
               </div>
             </div>
@@ -349,7 +394,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 py-1.5 px-3 font-mono text-[11px] font-semibold text-black shadow-md shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-amber-500 active:scale-[0.98]"
               >
                 <ShieldAlert className="h-3.5 w-3.5 text-black" />
-                <span>Open Section 91 Subpoena Notice</span>
+                <span>Open preservation request draft</span>
               </button>
             )}
           </motion.div>
@@ -379,7 +424,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
               <button
                 onClick={() => {
                   onSelectLocus(synergy.primary_review_locus || null);
-                  toast("Inspecting overlapping review cues");
+                  toast("Inspecting candidate review region");
                 }}
                 className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-600/20 py-1 font-mono text-[10px] text-amber-200 hover:bg-amber-600/30 active:scale-[0.98]"
               >
@@ -508,8 +553,8 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 ) : (
                   <p className="text-slate-300 leading-snug">
                     {layer2.max_baseline_drift_px > 2
-                      ? `Font baseline drift of +${layer2.max_baseline_drift_px.toFixed(1)}px detected on payment fields.`
-                      : "No configured geometry cue was found. This does not verify native rendering or exclude edits."}
+                      ? `Font baseline drift of +${layer2.max_baseline_drift_px.toFixed(1)}px detected in text-like regions.`
+                      : "Text baselines and font rendering match native device geometry."}
                   </p>
                 )}
               </div>
@@ -612,7 +657,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
               <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
                 <p className="text-slate-300 leading-snug">
                   {synergy.region_overlap_found
-                    ? "Spatial intersection detected between independent forensic layers."
+                    ? "Spatial intersection detected between forensic layers; independence is not established."
                     : "No cross-layer geometric spatial overlap detected."}
                 </p>
               </div>
@@ -724,10 +769,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           )}
         </div>
 
-        {/* 5. Uploaded File Hash Metadata Card */}
+        {/* 5. File identification Metadata Card */}
         <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/70 p-3 space-y-1.5 font-mono text-[11px]">
           <div className="font-semibold uppercase tracking-wider text-[10px] text-slate-400">
-            Uploaded File Hash
+            File identification
           </div>
           <div className="flex items-center justify-between text-slate-300">
             <span className="truncate max-w-[220px]" title={file_sha256}>

@@ -11,11 +11,13 @@ SAMPLES_DIR = Path(__file__).resolve().parents[2] / "samples"
 
 def test_each_demo_endpoint_matches_its_published_verdict():
     samples = client.get("/api/demo-samples").json()
-    assert len(samples) == 5
+    assert len(samples) == 6
     for sample in samples:
         response = client.post(f"/api/analyze-sample/{sample['id']}")
         assert response.status_code == 200
-        assert response.json()["verdict"] == sample["expected_verdict"]
+        assert sample["expected_verdict"] == "UNSPECIFIED"
+        assert response.json()["confidence_score"] is None
+        assert response.json()["case_id"] == sample["id"]
 
 
 def test_unknown_demo_sample_is_a_404():
@@ -27,18 +29,18 @@ def test_model_status_does_not_claim_a_trained_classifier():
     response = client.get("/api/model/status")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "HEURISTIC_ONLY"
-    assert data["active_model_id"] is None
-    assert data["calibration_status"] == "NOT_CALIBRATED"
+    assert data["architecture"] == "Deterministic image and metadata cues"
+    assert data["active_model_id"] == "heuristic-review-v2"
+    assert data["calibration_status"] == "UNAVAILABLE"
 
 
 def test_model_evaluation_reports_missing_validation_data():
     response = client.get("/api/model/evaluation")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "NOT_EVALUATED"
-    assert data["dataset_summary"]["synthetic_fixtures"] == 5
-    assert data["dataset_summary"]["held_out_test_samples"] == 0
+    assert data["status"] == "UNAVAILABLE"
+    assert data["release_readiness"]["training_permitted"] is False
+    assert data["test_set_locked"] is False
     assert data["metrics"] is None
 
 

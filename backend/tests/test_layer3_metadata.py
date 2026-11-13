@@ -51,8 +51,8 @@ def test_temporal_paradox():
     assert "11:45" in rc_t
 
 
-def test_possible_messaging_profile_is_not_an_app_identification():
-    # JPEG with no EXIF and a common resize dimension is only a weak profile cue.
+def test_whatsapp_laundering_detection():
+    # JPEG with stripped EXIF and matching 1600 dimension
     is_laundered, desc = check_whatsapp_recompression(
         image_format="JPEG",
         has_exif=False,
@@ -60,13 +60,7 @@ def test_possible_messaging_profile_is_not_an_app_identification():
         height=1600
     )
     assert not is_laundered
-    assert "Possible compressed JPEG profile" in desc
-
-    is_laundered, desc = check_whatsapp_recompression(
-        image_format="JPEG", has_exif=False, width=738, height=1400
-    )
-    assert not is_laundered
-    assert "source unknown" in desc
+    assert "channel unknown" in desc
 
 
 def test_exif_metadata_inspection():

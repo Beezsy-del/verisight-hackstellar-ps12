@@ -11,10 +11,11 @@ from app.core.schemas import BoundingBox
 def run_copy_move_analysis(
     img_bgr: np.ndarray
 ) -> tuple[bool, int, str, list[BoundingBox], dict[str, Any]]:
-    """Find candidate repeated-feature matches using ORB descriptors.
-
-    Similar text, icons, and UI components can match; candidate regions do not
-    establish copy-move editing.
+    """
+    Copy-Move Forgery Detection via ORB Keypoint Matching & Displacement Vector Clustering.
+    Extracts up to 1500 ORB descriptors, performs Brute-Force Hamming distance matching,
+    suppresses spatial neighbors (d < 24px), clusters translation vectors (dx, dy) within +-3px,
+    and flags cloned pixel regions with neon-magenta vector lines if >= 4 parallel vectors exist.
     """
     h, w = img_bgr.shape[:2]
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
@@ -27,8 +28,8 @@ def run_copy_move_analysis(
     bounding_boxes: list[BoundingBox] = []
 
     if descriptors is None or len(descriptors) < 10:
-        _, webp_buf = cv2.imencode('.webp', clone_canvas, [cv2.IMWRITE_WEBP_QUALITY, 101])
-        clone_b64 = f"data:image/webp;base64,{base64.b64encode(webp_buf.tobytes()).decode('utf-8')}"
+        _, png_buf = cv2.imencode('.png', clone_canvas)
+        clone_b64 = f"data:image/png;base64,{base64.b64encode(png_buf.tobytes()).decode('utf-8')}"
         return False, 0, clone_b64, [], {"keypoints_extracted": 0, "clusters_found": 0}
 
     # 2. Brute-Force Hamming Matching (k=4)
@@ -45,7 +46,7 @@ def run_copy_move_analysis(
         m2 = match_group[2]
 
         # Lowe's ratio test for distinctiveness + Hamming distance cap
-        if m1.distance <= 35 and (m2.distance == 0 or (m1.distance / float(m2.distance)) <= 0.78):
+        if m1.distance <= 35 and (m2.distance > 0 and (m1.distance / float(m2.distance)) <= 0.78):
             pt1 = keypoints[m1.queryIdx].pt
             pt2 = keypoints[m1.trainIdx].pt
             dist = np.hypot(pt1[0] - pt2[0], pt1[1] - pt2[1])
@@ -68,7 +69,7 @@ def run_copy_move_analysis(
     for (q_idx, t_idx), (pt1, pt2, dist) in unique_pairs.items():
         dx = pt2[0] - pt1[0]
         dy = pt2[1] - pt1[1]
-        
+
         # Normalize direction
         if dx < 0 or (dx == 0 and dy < 0):
             dx, dy = -dx, -dy
@@ -79,10 +80,11 @@ def run_copy_move_analysis(
         vector_clusters[(bin_x, bin_y)].append((pt1, pt2, (dx, dy)))
 
     # 5. Evaluate Clusters:
-    # A candidate repeated region may have:
+    # A true copy-move object has:
     # - >= 10 parallel vectors in the same bin
     # - Localized spatial bounding box (span < 350px) at both source and destination
     significant_clusters = []
+    cluster_verification = []
     for (bin_x, bin_y), matches in vector_clusters.items():
         if len(matches) >= 10:
             pts1 = [m[0] for m in matches]
@@ -94,14 +96,28 @@ def run_copy_move_analysis(
 
             # Compact localized object check
             if span1_x < 350 and span1_y < 350 and span2_x < 350 and span2_y < 350:
-                significant_clusters.append(matches)
+                # Repeated glyphs can match descriptors without spanning a coherent patch.
+                src=np.asarray(pts1,dtype=np.float32);dst=np.asarray(pts2,dtype=np.float32)
+                if min(span1_x,span1_y,span2_x,span2_y)<12:
+                    continue
+                affine,inliers=cv2.estimateAffinePartial2D(src,dst,method=cv2.RANSAC,ransacReprojThreshold=2.5,maxIters=500,confidence=.99)
+                if affine is None or inliers is None:
+                    continue
+                accepted=inliers.ravel().astype(bool)
+                if accepted.mean()<.8 or accepted.sum()<10:
+                    continue
+                scale=float(np.hypot(affine[0,0],affine[0,1]))
+                if not .9<=scale<=1.1:
+                    continue
+                significant_clusters.append([m for m,ok in zip(matches,accepted) if ok])
+                cluster_verification.append(float(accepted.mean()))
 
     clone_detected = len(significant_clusters) > 0
     total_clones = sum(len(c) for c in significant_clusters)
 
     # 6. Render Neon-Magenta Vector Lines on clone_b64
     # Color: Neon Magenta [255, 0, 255] in BGR
-    for cluster in significant_clusters:
+    for cluster, inlier_ratio in zip(significant_clusters, cluster_verification):
         pts1 = []
         pts2 = []
         for pt1, pt2, (dx, dy) in cluster:
@@ -132,24 +148,29 @@ def run_copy_move_analysis(
         b2_w = min(w - b2_x, max(all_x2) - b2_x + pad * 2)
         b2_h = min(h - b2_y, max(all_y2) - b2_y + pad * 2)
 
+        conf = min(0.99, 0.65 + len(cluster) * 0.05)
+
         bounding_boxes.append(BoundingBox(
             x=int(b2_x),
             y=int(b2_y),
             width=int(b2_w),
             height=int(b2_h),
             points=[[b2_x, b2_y], [b2_x + b2_w, b2_y], [b2_x + b2_w, b2_y + b2_h], [b2_x, b2_y + b2_h]],
-            label=f"Possible repeated feature match ({len(cluster)} pairs)",
+            label=f"Repeated-region candidate ({len(cluster)} verified vectors)",
+            confidence=round(conf, 2),
             layer=1,
             anomaly_type="CLONED_PIXEL_REGION_DETECTED",
             details={
                 "cluster_vector_count": len(cluster),
+                "inlier_ratio": round(inlier_ratio, 6),
+                "verification": "RANSAC translation/near-unit-scale candidate; not proof of copy-move",
                 "source_region": [b1_x, b1_y, b1_w, b1_h]
             }
         ))
 
     # Encode clone canvas
-    _, webp_buf = cv2.imencode('.webp', clone_canvas, [cv2.IMWRITE_WEBP_QUALITY, 101])
-    clone_b64 = f"data:image/webp;base64,{base64.b64encode(webp_buf.tobytes()).decode('utf-8')}"
+    _, png_buf = cv2.imencode('.png', clone_canvas)
+    clone_b64 = f"data:image/png;base64,{base64.b64encode(png_buf.tobytes()).decode('utf-8')}"
 
     details = {
         "total_keypoints": len(keypoints),

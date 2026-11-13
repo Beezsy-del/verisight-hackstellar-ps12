@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
+from app.services.image_validation import InvalidImage, ImageTooLarge
 import sys
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -15,12 +15,15 @@ if str(ROOT_DIR) not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from app.services.image_validation import InvalidImage, ImageTooLarge
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
+from fastapi.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
+from samples.generator import generate_all_samples
 
 from app.api.endpoints import router as api_router
+from app.api.response_endpoints import router as response_router
+from app.api.cloud_endpoints import router as cloud_router
 from app.core.config import settings
 
 
@@ -31,7 +34,7 @@ async def lifespan(app: FastAPI):
         while True:
             await asyncio.sleep(30)
             store.cleanup()
-            from app.api.endpoints import _MOBILE_UPLOADS
+            from app.api.cloud_endpoints import _MOBILE_UPLOADS
             from time import monotonic
             for key, item in list(_MOBILE_UPLOADS.items()):
                 if monotonic() - item["received_at"] > 600:
@@ -57,7 +60,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
-    description="Multi-layer screenshot forensic review using heuristic image cues",
+    description="Multi-Layer Digital Screenshot Verification & Tamper Forensics Platform",
     lifespan=lifespan
 )
 
@@ -66,42 +69,47 @@ async def invalid_image_handler(request, exc):
     return JSONResponse(status_code=413 if isinstance(exc, ImageTooLarge) else 422,
                         content={"detail": str(exc)})
 
-from app.services.resource_boundary import AnalysisBoundary
-app.add_middleware(AnalysisBoundary, capacity=2, response_budget=4_000_000)
-
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174", "http://127.0.0.1:5174"],
-    allow_credentials=True,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 from app.services.private_access import PrivateAccess
+from app.services.resource_boundary import AnalysisBoundary
+import os
+app.add_middleware(AnalysisBoundary, capacity=2, response_budget=4_000_000 if os.getenv("VERCEL") else 16_000_000)
 app.add_middleware(PrivateAccess)
 
 # Mount samples static directory
-if not settings.SAMPLES_DIR.exists():
-    raise RuntimeError(f"Packaged sample directory is missing: {settings.SAMPLES_DIR}")
+
 app.mount("/samples", StaticFiles(directory=str(settings.SAMPLES_DIR)), name="samples")
 
 # Mount API router
 app.include_router(api_router, prefix="/api")
+app.include_router(response_router, prefix="/api")
+app.include_router(cloud_router, prefix="/api")
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+# Reject cross-origin mutations even from non-browser clients; CORS alone is not CSRF protection.
+@app.middleware("http")
+async def origin_guard(request, call_next):
+    origin = request.headers.get("origin")
+    if request.method not in {"GET", "HEAD", "OPTIONS"} and origin:
+        expected = str(request.base_url).rstrip("/")
+        if origin != expected and origin not in settings.CORS_ORIGINS:
+            return JSONResponse({"detail": "Origin is not permitted."}, status_code=403)
+    return await call_next(request)
 
-# Serve the built Vite SPA from the same FastAPI origin in production.
 frontend_dist = ROOT_DIR / "frontend" / "dist"
-if frontend_dist.exists():
+if frontend_dist.is_dir():
     @app.get("/workbench", include_in_schema=False)
-    async def workbench_page():
-        return FileResponse(frontend_dist / "index.html")
-
     @app.get("/evaluation", include_in_schema=False)
-    async def evaluation_page():
+    @app.get("/response", include_in_schema=False)
+    @app.get("/guide", include_in_schema=False)
+    @app.get("/why-verisight", include_in_schema=False)
+    async def spa_page():
         return FileResponse(frontend_dist / "index.html")
-
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")

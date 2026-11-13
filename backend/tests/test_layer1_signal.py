@@ -28,7 +28,7 @@ def create_test_image(tampered: bool = False) -> np.ndarray:
 def test_ela_computation():
     img_clean = create_test_image(tampered=False)
     score_clean, ela_b64, anom_clean, boxes_clean, details = run_ela_analysis(img_clean)
-    assert ela_b64.startswith("data:image/webp;base64,")
+    assert ela_b64.startswith("data:image/png;base64,")
     assert isinstance(score_clean, float)
 
     img_tamp = create_test_image(tampered=True)
@@ -39,7 +39,7 @@ def test_ela_computation():
 def test_wavelet_noise_analysis():
     img_clean = create_test_image(tampered=False)
     score, wavelet_b64, boxes, details = run_wavelet_noise_analysis(img_clean)
-    assert wavelet_b64.startswith("data:image/webp;base64,")
+    assert wavelet_b64.startswith("data:image/webp;base64,") or wavelet_b64.startswith("data:image/png;base64,")
     assert "mean_noise_variance" in details
     assert isinstance(score, float)
 
@@ -55,7 +55,7 @@ def test_copy_move_detection():
     img[250:310, 300:360] = stamp
 
     cloned, count, clone_b64, boxes, details = run_copy_move_analysis(img)
-    assert clone_b64.startswith("data:image/webp;base64,")
+    assert clone_b64.startswith("data:image/png;base64,")
     assert isinstance(cloned, bool)
     assert isinstance(count, int)
 

@@ -21,7 +21,7 @@ class PrivateAccess:
         origin = headers.get(b'origin', b'').decode(errors='replace')
         if origin and scope.get('method', 'GET') not in {'GET', 'HEAD', 'OPTIONS'}:
             same_origin = origin == scope.get('scheme', 'http') + '://' + headers.get(b'host', b'').decode(errors='replace')
-            local_dev = origin in {'http://localhost:5174', 'http://127.0.0.1:5174', 'http://localhost:5173', 'http://127.0.0.1:5173'} and local
+            local_dev = origin in {'http://localhost:5175', 'http://127.0.0.1:5175', 'http://localhost:5174', 'http://127.0.0.1:5174', 'http://localhost:5173', 'http://127.0.0.1:5173'} and local
             if not (same_origin or local_dev):
                 return await JSONResponse({'detail': 'Cross-origin submissions are not allowed.'}, status_code=403)(scope, receive, send)
         password = os.getenv('VERISIGHT_ACCESS_PASSWORD', '')
@@ -43,7 +43,7 @@ class PrivateAccess:
         else:
             async def private_send(message):
                 if message['type'] == 'http.response.start':
-                    message['headers'] = list(message.get('headers', [])) + [(b'cache-control', b'no-store'), (b'referrer-policy', b'no-referrer'), (b'x-content-type-options', b'nosniff')]
+                    message['headers'] = [(k,v) for k,v in message.get('headers', []) if k.lower() not in {b'cache-control', b'referrer-policy', b'x-content-type-options'}] + [(b'cache-control', b'no-store'), (b'referrer-policy', b'no-referrer'), (b'x-content-type-options', b'nosniff')]
                 await send(message)
             return await self.app(scope, receive, private_send)
         response.headers['Cache-Control'] = 'no-store'

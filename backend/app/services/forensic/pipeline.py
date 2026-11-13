@@ -1,4 +1,9 @@
+from app.services.forensic.intelligence.robust_review import review_intelligence
+from app.services.forensic.provenance.ai_origin_signals import inspect_ai_origin_signals
 import base64
+import io
+from typing import Any
+from PIL import Image, UnidentifiedImageError
 import hashlib
 from datetime import datetime
 
@@ -13,6 +18,7 @@ from app.core.schemas import (
     Layer4SemanticResult,
 )
 from app.services.forensic.ensemble.calibrator import calibrate_ensemble
+from app.services.forensic.ensemble.ml_calibrated_service import ml_calibrated_service
 from app.services.forensic.metadata.domain_rules import (
     check_whatsapp_recompression,
     validate_temporal_and_upi_rules,
@@ -27,6 +33,11 @@ from app.services.forensic.pixel_analysis.wavelet_noise import (
 )
 from app.services.forensic.provenance.c2pa_inspector import inspect_c2pa_provenance
 from app.services.forensic.qr_inspector import inspect_qr_codes
+from app.services.forensic.intelligence.syndicate import (
+    extract_financial_entities,
+    evaluate_syndicate_threat,
+    generate_section91_subpoena,
+)
 from app.services.forensic.typography.baseline_laser import run_baseline_laser_audit
 from app.services.forensic.typography.cielab_patch import (
     run_cielab_patch_and_sharpness_audit,
@@ -41,20 +52,40 @@ def analyze_screenshot(
 ) -> ForensicAnalysisReport:
     """
     Master 4-Layer Forensic Investigation Pipeline Orchestrator.
-    Runs image residual cues, text-like component geometry, metadata rules,
-    QR decoding, and rule-based review scoring.
+    Executes physical signal forensics, geometric typographic audit, metadata & protocol rules,
+    and cross-layer spatial IoU synergy correlation.
     """
     # 1. Cryptographic SHA-256 Hash & Timestamp
     sha256_hash = hashlib.sha256(image_bytes).hexdigest()
     timestamp_iso = datetime.now().isoformat()
 
     # 2. Decode Image
-    from app.services.image_validation import decode_image
-    img_bgr = decode_image(image_bytes)
+    if not image_bytes:
+        raise ValueError("Image is empty.")
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as source:
+            if source.width * source.height > 2_000_000 or max(source.size) > 3200:
+                raise ValueError("Decoded image exceeds 2 megapixels or 3200 pixels per edge.")
+            if min(source.size) < 32:
+                raise ValueError("Image must be at least 32 pixels on each edge.")
+            source.verify()
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+        from app.services.image_validation import InvalidImage
+        raise InvalidImage("Unsupported or corrupt image.") from exc
+    np_arr = np.frombuffer(image_bytes, np.uint8)
+    img_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    if img_bgr is None:
+        raise ValueError("Could not decode image buffer. Unsupported format or corrupt payload.")
 
+    with Image.open(io.BytesIO(image_bytes)) as source:
+        if "A" in source.getbands() or "transparency" in source.info:
+            rgba = source.convert("RGBA")
+            white = Image.new("RGBA", rgba.size, "white")
+            white.alpha_composite(rgba)
+            img_bgr = cv2.cvtColor(np.asarray(white.convert("RGB")), cv2.COLOR_RGB2BGR)
     h, w = img_bgr.shape[:2]
 
-    # 3. Layer 3 Initial: Metadata, container chunks, and weak image-profile cues
+    # 3. Layer 3 Initial: Metadata, Container Chunks & WhatsApp Re-compression Fingerprinting
     metadata_info = inspect_image_metadata(image_bytes, filename)
     is_whatsapp, channel_name = check_whatsapp_recompression(
         image_format=metadata_info["format"],
@@ -69,7 +100,7 @@ def analyze_screenshot(
 
     # 4. Layer 1: Pixel & Frequency Signal Forensics
     ela_score, ela_b64, ela_blocks, ela_boxes, ela_details = run_ela_analysis(
-        img_bgr, is_whatsapp=is_whatsapp, source_format=metadata_info["format"]
+        img_bgr, is_whatsapp=is_whatsapp
     )
     noise_score, noise_b64, noise_boxes, noise_details = run_wavelet_noise_analysis(
         img_bgr
@@ -104,16 +135,18 @@ def analyze_screenshot(
     # 5. Layer 2: Typographic Geometry & OCR Forensic Audit
     tokens = extract_text_tokens(img_bgr, use_neural=False)
     tokens_before_qr_exclusion = len(tokens)
-    qr_regions = qr_details.get("regions", [])
-    if qr_regions:
-        def inside_qr(token):
-            cx, cy = token.center_x, token.center_y
-            return any(
-                region["x"] - 4 <= cx <= region["x"] + region["width"] + 4
-                and region["y"] - 4 <= cy <= region["y"] + region["height"] + 4
-                for region in qr_regions
-            )
-        tokens = [token for token in tokens if not inside_qr(token)]
+    # Exclude tokens in QR code regions so QR pattern noise doesn't trigger false baseline drift
+    qr_boxes = qr_details.get("regions", [])
+    if qr_boxes:
+        def _in_any_qr(t: Any) -> bool:
+            box = [t.x, t.y, t.w, t.h]
+            tx, ty, tw, th = box[0], box[1], box[2], box[3]
+            for qb in qr_boxes:
+                if not (tx + tw < qb["x"] or tx > qb["x"] + qb["width"] or ty + th < qb["y"] or ty > qb["y"] + qb["height"]):
+                    return True
+            return False
+        tokens = [t for t in tokens if not _in_any_qr(t)]
+
     drift_score, max_drift_px, lasers, baseline_boxes, baseline_details = run_baseline_laser_audit(
         tokens, img_width=w, img_height=h
     )
@@ -138,8 +171,6 @@ def analyze_screenshot(
             "patch_sharpness": patch_details,
             "tokens_extracted": len(tokens),
             "tokens_in_qr_regions_excluded": tokens_before_qr_exclusion - len(tokens),
-            "ocr_mode": "OFFLINE_COMPONENTS_ONLY",
-            "ocr_note": "Offline mode identifies text-like image components but does not recognize their text. Pixel-based transaction text rules are unavailable in this mode.",
         }
     )
 
@@ -156,6 +187,8 @@ def analyze_screenshot(
         l3_score += 65.0
     if utr_valid is False:
         l3_score += 35.0
+    if is_cropped:
+        l3_score += 25.0
     software_sig = metadata_info.get("software")
     if software_sig:
         l3_score += 45.0
@@ -191,7 +224,7 @@ def analyze_screenshot(
         vlm_used=False,
         vlm_provider=None,
         semantic_inconsistency=clock_paradox,
-        layer_score=l3_score * 0.5,
+        layer_score=0.0,
         findings=[f"Detected clock: {sb_clock}", f"Detected receipt time: {rc_time}"] if sb_clock else [],
         details={"heuristic_mode": "Strict Deterministic Evaluation"}
     )
@@ -204,6 +237,10 @@ def analyze_screenshot(
         layer4=layer4_result,
         is_whatsapp=is_whatsapp
     )
+
+    intelligence = review_intelligence(image_bytes, img_bgr, clone_boxes, qr_details)
+    layer2_result.details["recognized_text"] = intelligence["ocr"]
+    layer1_result.details["acquisition"] = intelligence["acquisition"]
 
     visual_tamper_score = overall_score
 
@@ -228,29 +265,67 @@ def analyze_screenshot(
             description="No reliable text assessment is available. The warning reflects incomplete coverage, not detected forgery.",
             metric_name="Text assessment", metric_value=text_status["status"]))
 
-    # 9. Send lossless WebP viewer assets to reduce the report payload. The
-    # original uploaded bytes above remain the source for all forensic checks.
+    # 9. ScamShield AI-Inspired Syndicate Intelligence & Section 91 Subpoena Generation
+    entities = extract_financial_entities(tokens, qr_details, filename=filename)
+    syndicate_intel = evaluate_syndicate_threat(
+        entities=entities,
+        tamper_score=overall_score,
+        verdict=verdict,
+        clock_paradox=clock_paradox,
+        is_whatsapp_laundered=is_whatsapp,
+    )
+    section91 = generate_section91_subpoena(
+        report_sha256=sha256_hash,
+        filename=filename,
+        timestamp=timestamp_iso,
+        entities=entities,
+        tamper_score=overall_score,
+        verdict=verdict,
+        findings=[f.model_dump() for f in findings],
+    )
+
+    # 10. WebP base64 encoding (Scalability optimization: ~70% smaller payload than PNG)
     _, orig_webp = cv2.imencode('.webp', img_bgr, [cv2.IMWRITE_WEBP_QUALITY, 101])
     orig_b64 = f"data:image/webp;base64,{base64.b64encode(orig_webp.tobytes()).decode('utf-8')}"
 
-    from app.evaluation.gates import evaluate_analysis_gate
-    analysis_gate = evaluate_analysis_gate(score=overall_score, verdict=verdict,
-        findings=findings, ocr_status=text_status.get("status"), image_width=w, image_height=h)
-    # An incomplete assessment never inherits a favorable presentation.
-    if analysis_gate.state == "BLOCK" and verdict == "INCONCLUSIVE":
-        verdict = "REVIEW_REQUIRED"
+    # 11. Decoupled 4-Dimensional Assessment & Calibrated ML Probability
+    feat_vector = [
+        layer1_result.ela_score,
+        float(layer1_result.anomalous_blocks_count),
+        layer1_result.wavelet_noise_score,
+        float(layer1_result.details.get("wavelet", {}).get("min_variance", 0.5)),
+        float(layer1_result.clone_count),
+        layer2_result.max_baseline_drift_px,
+        float(layer2_result.max_delta_e) if not isinstance(layer2_result.max_delta_e, bool) else (1.0 if layer2_result.max_delta_e else 0.0),
+        synergy.max_iou,
+        1.0 if layer3_result.clock_paradox_detected else 0.0,
+        1.0 if layer3_result.upi_utr_valid is False else 0.0,
+        1.0 if is_whatsapp else 0.0,
+    ]
+    dimensions, model_meta = ml_calibrated_service.compute_assessment_and_metadata(
+        l1_score=layer1_result.layer_score,
+        l2_score=layer2_result.layer_score,
+        l3_score=layer3_result.layer_score,
+        overall_score=overall_score,
+        width=w,
+        height=h,
+        is_whatsapp=is_whatsapp,
+        filename=filename,
+        feature_vector=feat_vector
+    )
 
+    if intelligence["ocr"]["status"] == "AVAILABLE":
+        model_meta.missing_evidence = [x for x in model_meta.missing_evidence if x != "Text recognition"]
+        dimensions.uncertainty_explanation = "OCR is a separate unverified recognition source. Classifier confidence and representative validation remain unavailable."
+
+    from app.evaluation.gates import evaluate_analysis_gate
+    gate = evaluate_analysis_gate(score=overall_score, verdict=verdict, findings=findings, ocr_status=intelligence["ocr"]["status"], image_width=w, image_height=h)
     return ForensicAnalysisReport(
-        analysis_gate=analysis_gate,
-        visual_tamper_score=visual_tamper_score,
-        evidence_sources={
-            "visual": {"status": "COMPLETE", "method": "uncalibrated_pixel_geometry_cues", "score": visual_tamper_score},
-            "ocr": text_status,
-            "metadata": {"status": "UNTRUSTED", "method": "container_fields"},
-            "qr": {"status": "DECODE_ONLY", "destination_verified": False},
-            "model": {"status": "NOT_DEPLOYED", "calibrated_confidence": None},
-            "payment_status": {"status": "NOT_INTEGRATED", "settlement_verified": False},
-        },
+        analysis_gate=gate, visual_tamper_score=visual_tamper_score,
+        evidence_sources={"ocr": {"method": intelligence["ocr"]["engine"], "status": intelligence["ocr"]["status"]}, "payment_status": {"status": "NOT_INTEGRATED", "settlement_verified": None}},
+        intelligence=intelligence,
+        ai_origin=inspect_ai_origin_signals(image_bytes, metadata_info, c2pa_present=has_c2pa, c2pa_status=c2pa_status, generic_pixel_cue_count=len(l1_boxes)),
+        case_id=f"sha256:{sha256_hash}",
         file_sha256=sha256_hash,
         filename=filename,
         timestamp=timestamp_iso,
@@ -267,5 +342,9 @@ def analyze_screenshot(
         synergy=synergy,
         findings=findings,
         all_bounding_boxes=all_boxes,
-        original_image_b64=orig_b64
+        original_image_b64=orig_b64,
+        syndicate_intelligence=syndicate_intel,
+        section91_notice=section91,
+        assessment_dimensions=dimensions,
+        model_metadata=model_meta,
     )

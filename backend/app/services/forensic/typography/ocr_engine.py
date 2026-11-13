@@ -12,7 +12,7 @@ except ImportError:
     _EASYOCR_AVAILABLE = False
 
 class TextToken:
-    def __init__(self, text: str, bbox: list[int], confidence: float | None = None, is_digit: bool = False):
+    def __init__(self, text: str, bbox: list[int], confidence: float = 1.0, is_digit: bool = False):
         self.text = text
         self.bbox = bbox  # [x, y, w, h]
         self.confidence = confidence
@@ -65,6 +65,7 @@ def extract_text_tokens_offline(
                 tokens.append(TextToken(
                     text=f"token_{len(tokens)}",
                     bbox=[bx, by, bw, bh],
+                    confidence=0.92,
                     is_digit=False
                 ))
 

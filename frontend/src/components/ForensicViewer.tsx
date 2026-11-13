@@ -1,5 +1,3 @@
-import { isReportPreviewFailure } from "../services/previewFailure";
-import { PreviewUnavailable } from "./PreviewUnavailable";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Layers,
@@ -23,6 +21,7 @@ import { SynchronizedLoupe } from "./SynchronizedLoupe";
 import { ComparisonSlider } from "./ComparisonSlider";
 import { ForensicReticle } from "./ForensicReticle";
 import { toast } from "sonner";
+import { useVerdictTheme } from "./AmbientThreatBackground";
 
 export type ViewMode =
   | "ORIGINAL"
@@ -55,19 +54,21 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   onViewModeChange,
 }) => {
   const [internalViewMode, setInternalViewMode] = useState<ViewMode>("ORIGINAL");
+  const { borderClass, glowClass } = useVerdictTheme();
   const viewMode = controlledViewMode ?? internalViewMode;
   const setViewMode = (mode: ViewMode) => {
     setInternalViewMode(mode);
     onViewModeChange?.(mode);
   };
 
-  const [failedPreviewReport, setFailedPreviewReport] = useState<ForensicAnalysisReport | null>(null);
-  useEffect(() => { setFailedPreviewReport(null); }, [report]);
-
-  const [showLasers, setShowLasers] = useState<boolean>(true);
-  const [showBoxes, setShowBoxes] = useState<boolean>(true);
+  const [showLasers, setShowLasers] = useState<boolean>(false);
+  const [showBoxes, setShowBoxes] = useState<boolean>(false);
   const [showGrid, setShowGrid] = useState<boolean>(false);
   const [zoom, setZoom] = useState(1);
+  const [nativeZoom, setNativeZoom] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [loadedSource, setLoadedSource] = useState<string | null>(null);
+  useEffect(() => setImageError(false), [report?.file_sha256, viewMode]);
   const [isPanning, setIsPanning] = useState(false);
   const [viewportSize, setViewportSize] = useState({ width: 1280, height: 800 });
 
@@ -101,9 +102,15 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
     return () => observer.disconnect();
   }, [Boolean(report)]);
 
+  useEffect(() => {
+    if (!nativeZoom && zoom === 1) viewportRef.current?.scrollTo(0,0);
+  }, [viewportSize.width, viewportSize.height, nativeZoom, zoom, report?.file_sha256]);
+
+  useEffect(() => {setShowLasers(isAdvancedMode);setShowBoxes(isAdvancedMode);},[isAdvancedMode]);
+  useEffect(() => {if(selectedLocus)setShowBoxes(true);},[selectedLocus]);
   // Reset zoom and fire 450ms laser scanline sweep on evidence change
   useEffect(() => {
-    setZoom(1);
+    setZoom(1); setNativeZoom(false); setImageError(false);
     if (report?.file_sha256) {
       setIsScanning(true);
       const timer = setTimeout(() => setIsScanning(false), 550);
@@ -157,7 +164,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
     setCursorPos({ x: xPct, y: yPct });
   };
 
-  const clampZoom = (value: number) => Math.min(5, Math.max(1, value));
+  const clampZoom = (value: number) => Math.min(5, Math.max(0.25, value));
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (!e.ctrlKey && !e.metaKey) return;
@@ -206,19 +213,11 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   ];
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-transparent select-none"
-      onErrorCapture={event => {
-        const image = event.target as Element;
-        if (isReportPreviewFailure(image.tagName, image.getAttribute?.("src") ?? null,
-          [original_image_b64, layer1.ela_b64, layer1.wavelet_noise_b64, layer1.clone_b64])) {
-          setFailedPreviewReport(report);
-        }
-      }}>
-      {failedPreviewReport === report && <PreviewUnavailable />}
+    <div className="relative flex h-[65dvh] shrink-0 md:h-full min-h-[360px] md:min-h-0 min-w-0 w-full md:flex-1 flex-col overflow-hidden bg-transparent select-none">
       {/* Sub-Toolbar (h-11 bg-[#0B101B] border-b border-white/[0.06]) */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0B101B]/95 px-3 backdrop-blur text-xs">
+      <div className="flex min-h-11 flex-wrap gap-2 py-2 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0B101B]/95 px-3 backdrop-blur text-xs">
         {/* Left: Sliding Segmented Primary View Tabs */}
-        <div className="relative flex items-center rounded-lg border border-white/[0.07] bg-[#070B14] p-0.5 text-xs">
+        <div className="relative flex flex-wrap items-center rounded-lg border border-white/[0.07] bg-[#070B14] p-0.5 text-xs">
           {PRIMARY_MODES.map((tab) => {
             const isActive = viewMode === tab.id;
             return (
@@ -396,7 +395,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
       {/* Main Forensic Canvas */}
       {(() => {
         const availableWidth = Math.max(240, viewportSize.width - 32);
-        const availableHeight = Math.max(240, viewportSize.height - 32);
+        const availableHeight = Math.max(100, viewportSize.height - 72);
         const quadWidth = Math.min(860, availableWidth, availableHeight * 0.9);
         const fitScale = Math.min(
           availableWidth / image_width,
@@ -404,10 +403,10 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
           1,
         );
         const canvasWidth = Math.round(
-          (viewMode === "QUAD" ? quadWidth : image_width * fitScale) * zoom,
+          (viewMode === "QUAD" ? quadWidth : image_width * (nativeZoom ? 1 : fitScale)) * zoom,
         );
         const canvasHeight = Math.round(
-          (viewMode === "QUAD" ? quadWidth * (10 / 9) : image_height * fitScale) * zoom,
+          (viewMode === "QUAD" ? quadWidth * (10 / 9) : image_height * (nativeZoom ? 1 : fitScale)) * zoom,
         );
 
         return (
@@ -512,18 +511,23 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
                     onMouseMove={handleMouseMove}
-                    className="relative max-h-full flex items-center justify-center rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/90"
+                    className={`relative shrink-0 flex items-center justify-center rounded-xl overflow-hidden shadow-2xl bg-black/90 transition-colors duration-200 border ${borderClass} ${glowClass}`}
                     style={{
+                      boxSizing: "content-box",
                       width: canvasWidth,
                       height: canvasHeight,
                       aspectRatio: `${image_width} / ${image_height}`,
                       cursor: zoom > 1 ? (isPanning ? "grabbing" : "grab") : "default",
                     }}
                   >
+                    {!imageError && loadedSource !== currentLayerImg && <p role="status" className="absolute z-40 rounded bg-slate-950/90 p-3 text-xs text-sky-200">Loading evidence image…</p>}
+                    {imageError && <p role="alert" className="absolute z-40 bg-slate-950 p-4 text-rose-300">Image preview could not load. Select the case again or re-upload.</p>}
                     {/* Base Image */}
                     <img
                       src={currentLayerImg}
                       alt={layerLabel}
+                      onError={() => setImageError(true)}
+                      onLoad={(event) => {setImageError(false); setLoadedSource(event.currentTarget.getAttribute("src"));}}
                       className="w-full h-full object-contain select-none pointer-events-none"
                     />
 
@@ -562,7 +566,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                       {/* Sub-pixel Horizontal Baseline Alignment Lasers */}
                       {showLasers &&
                         layer2.lasers.map((laser, idx) => {
-                          const hasAlignmentCue = laser.is_alignment_outlier;
+                          const hasAlignmentCue = laser.is_tampered;
                           const x1 = laser.x_start ?? 40;
                           const x2 = laser.x_end ?? image_width - 40;
                           const y = laser.y_baseline;
@@ -615,14 +619,14 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
 
                       {/* Anomaly Bounding Box Reticles */}
                       {showBoxes &&
-                        all_bounding_boxes.map((box, bIdx) => {
+                        [...all_bounding_boxes, ...(selectedLocus?.anomaly_type === "OCR_REVIEW_REGION" ? [selectedLocus] : [])].map((box, bIdx) => {
                           const isLocus = box.anomaly_type === "CROSS_LAYER_SYNERGY_LOCUS";
                           const isSelected =
                             selectedLocus &&
                             selectedLocus.x === box.x &&
                             selectedLocus.y === box.y;
 
-                          const strokeColor = isLocus
+                          const strokeColor = box.anomaly_type === "OCR_REVIEW_REGION" ? "#38bdf8" : isLocus
                             ? "#f59e0b"
                             : box.layer === 1
                             ? "#ec4899"
@@ -636,7 +640,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                               className="cursor-pointer pointer-events-auto"
                               onClick={() => {
                                 onSelectLocus?.(box);
-                                toast(`Inspecting Anomaly: ${box.label}`);
+                                toast(`Inspecting region: ${box.label}`);
                               }}
                             >
                               <rect
@@ -647,7 +651,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                                 fill={
                                   isLocus
                                     ? "rgba(245, 158, 11, 0.15)"
-                                    : "rgba(244, 63, 94, 0.08)"
+                                    : box.anomaly_type === "OCR_REVIEW_REGION" ? "rgba(56, 189, 248, 0.08)" : "rgba(244, 63, 94, 0.08)"
                                 }
                                 stroke={strokeColor}
                                 strokeWidth={isLocus || isSelected ? "3" : "1.8"}
@@ -727,10 +731,10 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                   y={cursorPos.y}
                   originalImgSrc={original_image_b64}
                   spectralImgSrc={
-                    viewMode !== "ORIGINAL" ? currentLayerImg : layer1.ela_b64
+                    viewMode !== "ORIGINAL" && viewMode !== "LOUPE" ? currentLayerImg : layer1.ela_b64
                   }
                   spectralLabel={
-                    viewMode !== "ORIGINAL" ? layerLabel : "Compression Heatmap (ELA)"
+                    viewMode !== "ORIGINAL" && viewMode !== "LOUPE" ? layerLabel : "Compression Heatmap (ELA)"
                   }
                   imgWidth={image_width}
                   imgHeight={image_height}
@@ -743,7 +747,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
               <button
                 type="button"
                 onClick={() => setZoom((c) => clampZoom(c - 0.25))}
-                disabled={zoom <= 1}
+                disabled={zoom <= 0.25}
                 title="Zoom out"
                 aria-label="Zoom out"
                 className="rounded-lg p-1.5 text-slate-300 hover:bg-white/[0.08] active:scale-[0.95] disabled:opacity-40"
@@ -751,7 +755,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                 <ZoomOut className="h-3.5 w-3.5" />
               </button>
               <span className="min-w-12 text-center font-mono text-[11px] text-sky-300 font-semibold">
-                {Math.round(zoom * 100)}%
+                {Math.round(zoom * (nativeZoom ? 1 : fitScale) * 100)}%
               </span>
               <button
                 type="button"
@@ -767,7 +771,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setZoom(1);
+                  setZoom(1); setNativeZoom(false); viewportRef.current?.scrollTo(0,0);
                   toast("View fit to screen (F)");
                 }}
                 title="Fit screenshot to screen (F)"
@@ -776,10 +780,11 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                 <Maximize2 className="h-3 w-3" />
                 <span>Fit</span>
               </button>
+              <button type="button" className="px-2 py-1 text-xs" onClick={() => {setNativeZoom(true); setZoom(1);}}>1x</button>
               <button
                 type="button"
                 onClick={() => {
-                  setZoom(2);
+                  setZoom(2); setNativeZoom(true);
                   toast("200% Pixel Inspection Scale active");
                 }}
                 title="200% Pixel Detail"

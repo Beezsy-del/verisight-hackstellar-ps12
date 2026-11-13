@@ -1,6 +1,3 @@
-import { PersistenceNotice } from "./PersistenceNotice";
-import { ReviewLimitations } from "./ReviewLimitations";
-import { AnalysisGatePanel } from "./AnalysisGatePanel";
 import React from "react";
 import {
   X,
@@ -61,16 +58,15 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
   const caseId = `VS-CASE-${file_sha256.slice(0, 8).toUpperCase()}`;
 
   return (
-    <div className="forensic-print-root fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-[#0b1120] border border-[#1e293b] rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden print:m-0 print:p-0 print:border-none print:shadow-none print:max-h-full print:w-full print:bg-white print:text-black">
-        <AnalysisGatePanel gate={report.analysis_gate} />
-        <PersistenceNotice status={report.persistence_status} />
+        <p className="p-4 text-xs">{synergy.region_overlap_found ? "Candidate signals overlap; this is not proof of tampering." : "No cross-layer candidate overlap detected."}</p>
         {/* Top Modal Controls (Hidden in Print) */}
         <div className="h-14 px-6 border-b border-[#1e293b] bg-[#070b14] flex items-center justify-between no-print">
           <div className="flex items-center space-x-2">
             <FileCheck className="w-5 h-5 text-sky-400" />
             <span className="font-semibold text-sm text-[#f1f5f9]">
-              Printable Forensic Audit Dossier
+              Internal Review Memo
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -97,15 +93,14 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-xl tracking-wider text-[#f1f5f9] print:text-black">
-                  VERISIGHT FORENSIC AUDIT DOSSIER
+                  VERISIGHT EVIDENCE REVIEW
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800 print:border-black print:bg-gray-100 print:text-black">
-                  HEURISTIC REVIEW REPORT
+                  INTERNAL REVIEW — NOT CERTIFIED
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8] print:text-gray-600 mt-1">
-                Multi-Layer Digital Screenshot Verification & Splicing
-                Investigation Platform
+                Screenshot triage and evidence review
               </p>
             </div>
             <div className="text-right font-mono text-[11px] text-[#94a3b8] print:text-gray-700 space-y-0.5">
@@ -130,10 +125,8 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             </div>
           </div>
 
-          <ReviewLimitations verdict={verdict} />
-
           {/* Section 1: Executive Verdict & SHA-256 Integrity */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-50 space-y-2">
               <span className="text-[10px] font-mono text-[#64748b] print:text-gray-500 uppercase tracking-wider">
                 Investigative Determination
@@ -150,16 +143,16 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Review priority (not probability): <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
+                Heuristic Score: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
               </div>
             </div>
 
             <div className="p-4 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-50 space-y-1.5 font-mono text-xs">
               <span className="text-[10px] text-[#64748b] print:text-gray-500 uppercase tracking-wider block">
-                Evidence Custody Hashes
+                File Identification
               </span>
               <div
-                className="truncate print:whitespace-normal print:break-all text-[#94a3b8] print:text-gray-700"
+                className="break-all text-[#94a3b8] print:text-gray-700"
                 title={file_sha256}
               >
                 SHA-256: <strong>{file_sha256}</strong>
@@ -185,7 +178,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             <h4 className="font-bold text-xs uppercase font-mono tracking-wider text-[#94a3b8] print:text-gray-700">
               Forensic Measurement Breakdown (Heuristic)
             </h4>
-            <div className="border border-[#1e293b] print:border-gray-300 rounded-xl overflow-hidden">
+            <div className="border border-[#1e293b] print:border-gray-300 rounded-xl overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead className="bg-[#070b14] print:bg-gray-200 border-b border-[#1e293b] print:border-gray-300 text-[#64748b] print:text-black">
                   <tr>
@@ -237,8 +230,8 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       Metadata & Protocol Rules
                     </td>
                     <td className="p-2.5">
-                      Viewport Match:{" "}
-                      {layer3.is_non_native_viewport ? "Non-Native" : "Native"}{" "}
+                      Dimension heuristic:{" "}
+                      {layer3.is_non_native_viewport ? "Unusual dimensions" : "No dimension flag"}{" "}
                       | Time check:{" "}
                       {layer3.clock_paradox_detected ? "CONFLICT" : layer2.details.ocr_mode === "OFFLINE_COMPONENTS_ONLY" ? "NOT CHECKED" : "NO CONFLICT FOUND"}{" "}
                       | Reference format:{" "}
@@ -258,7 +251,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                     </td>
                     <td className="p-2.5">
                       Overlapping indicators:{" "}
-                      {synergy.region_overlap_found
+                      {synergy.max_iou > 0
                         ? "Found in highlighted region"
                         : "None found"}
                     </td>
@@ -304,9 +297,9 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
           {/* Section 4: Legal & Scientific Disclaimer */}
           <div className="p-3.5 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-100 text-[11px] text-[#64748b] print:text-gray-600 leading-relaxed">
             <strong>Scientific & Evidentiary Disclaimer:</strong> VeriSight
-            produces deterministic, mathematically reproducible forensic
-            indicators across pixel signal distributions, sub-pixel typography
-            alignment, and metadata consistency. However, digital image analysis
+            produces heuristic indicators from pixel signals, text-like component geometry,
+            and available metadata. Scores are not probabilities; candidate regions
+            do not prove editing. This memo is not certified or officially issued. However, digital image analysis
             alone cannot definitively confirm or deny whether a financial
             transaction occurred on the banking settlement network. This dossier
             constitutes technical investigative assistance and should be

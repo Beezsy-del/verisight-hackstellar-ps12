@@ -1,6 +1,7 @@
 from __future__ import annotations
+from typing import Literal
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,8 +13,7 @@ class BoundingBox(BaseModel):
     height: int
     points: list[list[int]] | None = None
     label: str
-    # None until region-level confidence is calibrated against representative data.
-    confidence: float | None = None
+    confidence: float = 1.0
     layer: int
     anomaly_type: str
     details: dict[str, Any] | None = None
@@ -24,8 +24,8 @@ class BaselineLaser(BaseModel):
     slope: float = 0.0
     tokens_count: int
     delta_y_max: float
-    is_alignment_outlier: bool
-    status: str  # "BASELINE_REFERENCE" or "REVIEW_CUE"
+    is_tampered: bool
+    status: str  # "ALIGNED_CYAN" or "CRITICAL_RED"
     callout_text: str | None = None
     token_indices: list[int] = Field(default_factory=list)
     x_start: int | None = None
@@ -84,6 +84,10 @@ class Layer4SemanticResult(BaseModel):
 class CrossLayerSynergy(BaseModel):
     region_overlap_found: bool = False
     primary_review_locus: BoundingBox | None = None
+    synergy_multiplier_applied: bool = False
+    multiplier_factor: float = 1.0
+    max_iou: float = 0.0
+    primary_forgery_locus: BoundingBox | None = None
     synergy_explanation: str = "No cross-layer anomaly alignment detected."
 
 class ForensicFinding(BaseModel):
@@ -96,12 +100,37 @@ class ForensicFinding(BaseModel):
     metric_value: str
     bounding_box: BoundingBox | None = None
 
+class AssessmentDimensions(BaseModel):
+    image_integrity_score: float = Field(default=1.0, description="Physical pixel & frequency integrity (0.0 to 1.0)")
+    image_integrity_status: str = Field(default="INTACT", description="INTACT, COMPRESSION_NOISE, or TAMPER_DETECTED")
+    text_consistency_score: float = Field(default=1.0, description="Sub-pixel baseline & OCR geometry consistency (0.0 to 1.0)")
+    text_consistency_status: str = Field(default="CONSISTENT", description="CONSISTENT, SUBPIXEL_DRIFT, or GEOMETRIC_ANOMALY")
+    payment_verification_status: str = Field(default="INDEPENDENT_SOURCE_QUERY_REQUIRED", description="Financial gateway verification state")
+    payment_verification_details: str = Field(default="A digital screenshot cannot independently prove financial transfer. Independent bank/NPCI verification required.")
+    forensic_uncertainty_status: str = Field(default="HIGH_CONFIDENCE", description="HIGH_CONFIDENCE, MODERATE_UNCERTAINTY, or INCONCLUSIVE")
+    forensic_uncertainty_score: float | None = Field(default=None, description="Uncertainty index (0.0 low to 1.0 high)")
+    uncertainty_explanation: str = Field(default="Resolution and noise characteristics sufficient for algorithmic evaluation.")
+
+class ModelInferenceMetadata(BaseModel):
+    model_id: str = "verisight-fusion-gbdt-v1"
+    model_version: str = "1.2.1"
+    architecture: str = "HistGradientBoosting Classifier with 3-fold CalibratedClassifierCV"
+    calibration_status: str = "CALIBRATED_SIGMOID_CV3"
+    promotion_status: str = "EXPERIMENTAL"
+    feature_schema_version: str = "1.0.0"
+    inference_status: str = "EXECUTED"
+    calibrated_probability: float | None = None
+    raw_model_score: float | None = None
+    missing_evidence: list[str] = Field(default_factory=list)
+    is_operational_triage_alert: bool = False
+    is_synthetic_benchmark: bool = False
+    disclaimer: str = "EXPERIMENTAL MODEL: Evaluated on synthetic benchmark. Not validated for independent real-world legal certainty."
+
 class GateReason(BaseModel):
     code: str
     state: Literal["PASS", "WARNING", "BLOCK"]
     message: str
     evidence_ids: list[str] = Field(default_factory=list)
-
 
 class AnalysisGate(BaseModel):
     state: Literal["PASS", "WARNING", "BLOCK"] = "BLOCK"
@@ -111,13 +140,23 @@ class AnalysisGate(BaseModel):
     allowed_actions: dict[str, bool] = Field(default_factory=lambda: {"view_report": False, "automated_approval": False})
     settlement_verified: Literal[False] = False
 
-
 class ForensicAnalysisReport(BaseModel):
     persistence_status: Literal["NOT_REQUESTED", "DISABLED", "NOT_CONFIGURED", "SAVED", "FAILED"] = "NOT_REQUESTED"
     analysis_gate: AnalysisGate = Field(default_factory=AnalysisGate)
     evidence_sources: dict[str, Any] = Field(default_factory=dict)
     visual_tamper_score: float | None = None
     score_kind: str = "uncalibrated_review_priority"
+    media_urls: dict[str, str] = Field(default_factory=dict)
+    intelligence: dict[str, Any] = Field(default_factory=dict)
+    schema_version: str = "2.0"
+    case_id: str = ""
+    sample_id: str | None = None
+    source_kind: str = "USER_UPLOAD_UNVERIFIED"
+    processing_status: str = "COMPLETE"
+    ai_origin_status: str = "UNAVAILABLE"
+    ai_origin: dict[str, Any] = Field(default_factory=dict)
+    payment_status: str = "NOT_VERIFIED"
+    limitations: list[str] = Field(default_factory=lambda: ["Screenshot analysis does not verify payment settlement.", "Confidence unavailable; heuristic cues are not proof of editing.", "No AI-origin classifier or OCR text recognition is active."])
     file_sha256: str
     filename: str | None = "screenshot.png"
     timestamp: str
@@ -125,7 +164,7 @@ class ForensicAnalysisReport(BaseModel):
     image_height: int
     overall_tamper_score: float
     confidence_score: float | None = None
-    verdict: str  # INCONCLUSIVE, REVIEW_REQUIRED, or CORROBORATED_ANOMALIES
+    verdict: str  # "AUTHENTIC_VERIFIED", "SUSPICIOUS_ANOMALIES", "MANIPULATED_FORGERY", "CORROBORATED_ANOMALIES", "REVIEW_REQUIRED", "INCONCLUSIVE"
     channel_detected: str
     layer1: Layer1SignalResult
     layer2: Layer2GeometryResult
@@ -135,6 +174,28 @@ class ForensicAnalysisReport(BaseModel):
     findings: list[ForensicFinding] = Field(default_factory=list)
     all_bounding_boxes: list[BoundingBox] = Field(default_factory=list)
     original_image_b64: str
+    syndicate_intelligence: dict[str, Any] | None = None
+    section91_notice: str | None = None
+    assessment_dimensions: AssessmentDimensions = Field(default_factory=AssessmentDimensions)
+    model_metadata: ModelInferenceMetadata = Field(default_factory=ModelInferenceMetadata)
+
+class ModelStatusResponse(BaseModel):
+    release_readiness: dict[str, Any] = Field(default_factory=dict)
+    evidence_sources: dict[str, Any] = Field(default_factory=dict)
+    active_model_id: str
+    active_model_version: str
+    architecture: str
+    calibration_status: str
+    promotion_status: str
+    available_models: list[dict[str, Any]]
+    ml_environment_ready: bool
+
+class BenchmarkRunResponse(BaseModel):
+    status: str
+    benchmark_dataset: str
+    sample_count: int
+    models_evaluated: list[str]
+    report: dict[str, Any]
 
 class DemoSampleMeta(BaseModel):
     id: str

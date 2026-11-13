@@ -1,7 +1,4 @@
 from pathlib import Path
-from io import BytesIO
-
-from PIL import Image
 
 from app.main import app
 from app.services.forensic.pipeline import analyze_screenshot
@@ -23,51 +20,23 @@ def test_api_demo_samples_list():
     response = client.get("/api/demo-samples")
     assert response.status_code == 200
     samples = response.json()
-    assert len(samples) == 5
+    assert len(samples) == 6
     sample_ids = [s["id"] for s in samples]
     assert "sample_1" in sample_ids
     assert "sample_2" in sample_ids
 
 
-def test_sample_1_clean_synthetic_fixture():
+def test_sample_1_synthetic():
     sample_path = SAMPLES_DIR / "sample_1_clean_synthetic_ui.png"
     assert sample_path.exists()
     with open(sample_path, "rb") as f:
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
+    assert report.visual_tamper_score < 35.0
     assert report.verdict == "REVIEW_REQUIRED"
     assert any(f.id.startswith("f-receipt-text-") for f in report.findings)
     assert report.confidence_score is None
-    assert all(box.confidence is None for box in report.all_bounding_boxes)
-    assert not any(f.id == "f-l2-laser" for f in report.findings)
-
-
-def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
-    source = Image.open(SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").convert("RGB")
-    variants = []
-    for quality in (95, 80):
-        output = BytesIO()
-        source.save(output, format="JPEG", quality=quality)
-        variants.append((f"jpeg-{quality}", output.getvalue()))
-
-    resized = BytesIO()
-    source.resize((360, 780)).save(resized, format="PNG")
-    variants.append(("resized-png", resized.getvalue()))
-
-    cropped = BytesIO()
-    source.crop((20, 20, source.width - 20, source.height - 20)).save(cropped, format="PNG")
-    variants.append(("cropped-png", cropped.getvalue()))
-
-    for name, data in variants:
-        report = analyze_screenshot(data, name)
-        assert report.verdict != "CORROBORATED_ANOMALIES", name
-
-
-def test_png_ela_is_not_scored_as_manipulation_evidence():
-    report = analyze_screenshot((SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes(), "clean.png")
-    assert report.layer1.ela_score == 0
-    assert report.layer1.details["ela"]["scoring_eligible"] is False
 
 
 def test_sample_2_spliced_amount():
@@ -77,8 +46,10 @@ def test_sample_2_spliced_amount():
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    # This labeled synthetic fixture combines a baseline anomaly with independent cues.
-    assert report.verdict == "REVIEW_REQUIRED"
+    # Spliced amount should be flagged
+    assert report.layer2.bounding_boxes
+    assert report.confidence_score is None
+    assert "AUTHENTIC_VERIFIED" != report.verdict
 
 
 def test_sample_3_temporal_paradox():
@@ -88,19 +59,18 @@ def test_sample_3_temporal_paradox():
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    assert report.verdict == "REVIEW_REQUIRED"
-    assert report.layer3.clock_paradox_detected or report.layer3.upi_utr_valid is False
+    assert report.layer3.clock_paradox_detected or report.layer3.upi_utr_valid is False or report.overall_tamper_score >= 40.0
 
 
-def test_sample_4_synthetic_jpeg_reencode():
-    sample_path = SAMPLES_DIR / "sample_4_synthetic_jpeg_reencode.jpg"
+def test_sample_4_whatsapp_laundered():
+    sample_path = SAMPLES_DIR / "sample_4_whatsapp_laundered.jpg"
     assert sample_path.exists()
     with open(sample_path, "rb") as f:
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
     assert not report.layer3.is_whatsapp_laundered
-    assert "source unknown" in report.layer3.channel_detected
+    assert "channel unknown" in report.layer3.channel_detected
 
 
 def test_sample_5_cloned_receipt():

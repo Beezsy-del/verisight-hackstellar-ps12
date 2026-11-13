@@ -58,7 +58,7 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
     printWindow.document.write(`
       <html>
         <head>
-          <title>Section 91 Statutory Requisition - VeriSight</title>
+          <title>Preservation Request Draft - VeriSight</title>
           <style>
             body { font-family: 'Courier New', monospace; padding: 40px; color: #111; line-height: 1.4; font-size: 13px; }
             pre { white-space: pre-wrap; word-wrap: break-word; }
@@ -66,7 +66,7 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
           </style>
         </head>
         <body>
-          <pre>${noticeText.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char))}</pre>
+          <pre>${noticeText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
           <script>window.onload = function() { window.print(); window.close(); }</script>
         </body>
       </html>
@@ -86,14 +86,14 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="text-base font-bold tracking-tight text-[#f1f5f9]">
-                  Section 91 Cr.P.C. / Section 94 BNSS Statutory Notice
+                  Evidence preservation request draft
                 </h3>
                 <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-rose-950 text-rose-300 border border-rose-800">
-                  1930 Cyber-Cell Ready
+                  Personal draft
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8] mt-0.5">
-                Automated legal requisition for Emergency Account Freeze & Evidence Preservation
+                Review and edit before sharing. Not issued or submitted by an authority.
               </p>
             </div>
           </div>
@@ -106,10 +106,10 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
         </div>
 
         {/* Intelligence Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3 bg-[#070b14]/50 border-b border-[#1e293b] text-xs">
-          <div className="bg-[#0b1120] p-2.5 rounded-lg border border-[#1e293b]">
-            <div className="flex items-center space-x-1.5 text-[#94a3b8] mb-1 font-mono text-[10px]">
-              <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5 px-6 py-3 bg-[#070b14]/50 border-b border-[#1e293b] text-xs">
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <CreditCard className="w-3 h-3 text-amber-400" />
               <span>TARGET VPA</span>
             </div>
             <div className="font-mono font-medium text-white truncate" title={entities?.payee_vpa || "Not extracted"}>
@@ -117,9 +117,9 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#0b1120] p-2.5 rounded-lg border border-[#1e293b]">
-            <div className="flex items-center space-x-1.5 text-[#94a3b8] mb-1 font-mono text-[10px]">
-              <Building className="w-3.5 h-3.5 text-sky-400" />
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <Building className="w-3 h-3 text-sky-400" />
               <span>REPORTED PAYEE</span>
             </div>
             <div className="font-medium text-white truncate" title={entities?.payee_name || "N/A"}>
@@ -127,19 +127,39 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#0b1120] p-2.5 rounded-lg border border-[#1e293b]">
-            <div className="flex items-center space-x-1.5 text-[#94a3b8] mb-1 font-mono text-[10px]">
-              <Hash className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <Hash className="w-3 h-3 text-emerald-400" />
               <span>REFERENCE UTR</span>
             </div>
             <div className="font-mono font-medium text-white truncate">
-              {entities?.utr_number || "Fictitious / Non-standard"}
+              {entities?.utr_number || "Non-std"}
             </div>
           </div>
 
-          <div className="bg-[#0b1120] p-2.5 rounded-lg border border-[#1e293b]">
-            <div className="flex items-center space-x-1.5 text-[#94a3b8] mb-1 font-mono text-[10px]">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <CreditCard className="w-3 h-3 text-purple-400" />
+              <span>AMOUNT</span>
+            </div>
+            <div className="font-mono font-medium text-white truncate">
+              {entities?.amount ? `₹${entities.amount}` : "N/A"}
+            </div>
+          </div>
+
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <Building className="w-3 h-3 text-cyan-400" />
+              <span>PSP / BANK</span>
+            </div>
+            <div className="font-medium text-white truncate" title={entities?.psp_provider || "UPI PSP"}>
+              {entities?.psp_provider || "UPI PSP"}
+            </div>
+          </div>
+
+          <div className="bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div className="flex items-center space-x-1 text-[#94a3b8] mb-1 font-mono text-[9px]">
+              <AlertTriangle className="w-3 h-3 text-rose-400" />
               <span>SYNDICATE LEVEL</span>
             </div>
             <div className="font-semibold text-rose-300 truncate">
@@ -170,7 +190,7 @@ export const Section91NoticeModal: React.FC<Section91NoticeModalProps> = ({
               className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-[#1e293b] hover:bg-[#334155] text-white transition-colors border border-[#334155]"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? "Copied" : "Copy Subpoena"}</span>
+              <span>{copied ? "Copied" : "Copy draft"}</span>
             </button>
 
             <button

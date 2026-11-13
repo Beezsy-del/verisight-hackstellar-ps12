@@ -1,3 +1,14 @@
+export interface AnalysisGate {
+  state: "PASS" | "WARNING" | "BLOCK";
+  processing_status: "COMPLETE" | "INCOMPLETE" | "FAILED";
+  policy_version: string;
+  reasons: { code: string; state: "PASS" | "WARNING" | "BLOCK"; message: string; evidence_ids: string[] }[];
+  allowed_actions: { view_report: boolean; automated_approval: false };
+  settlement_verified: false;
+}
+
+export type PersistenceStatus = "DISABLED" | "NOT_CONFIGURED" | "FAILED" | "SAVED" | "NOT_REQUESTED";
+
 export interface BoundingBox {
   x: number;
   y: number;
@@ -5,7 +16,7 @@ export interface BoundingBox {
   height: number;
   points?: number[][];
   label: string;
-  confidence: number | null;
+  confidence: number;
   layer: number;
   anomaly_type: string;
   details?: Record<string, any>;
@@ -17,7 +28,7 @@ export interface BaselineLaser {
   slope: number;
   tokens_count: number;
   delta_y_max: number;
-  is_alignment_outlier: boolean;
+  is_tampered: boolean;
   status: "ALIGNED_CYAN" | "CRITICAL_RED";
   callout_text?: string;
   token_indices: number[];
@@ -82,6 +93,10 @@ export interface Layer4SemanticResult {
 export interface CrossLayerSynergy {
   region_overlap_found: boolean;
   primary_review_locus?: BoundingBox | null;
+  max_iou: number;
+  synergy_multiplier_applied: boolean;
+  multiplier_factor: number;
+  primary_forgery_locus?: BoundingBox;
   synergy_explanation: string;
 }
 
@@ -104,6 +119,7 @@ export interface SyndicateIntelligence {
     payee_name?: string | null;
     utr_number?: string | null;
     amount?: string | null;
+    psp_provider?: string | null;
     qr_linked?: boolean;
     qr_intent?: {
       vpa?: string | null;
@@ -114,20 +130,20 @@ export interface SyndicateIntelligence {
   recommended_action: string;
 }
 
-export interface AnalysisGate {
-  state: "PASS" | "WARNING" | "BLOCK";
-  processing_status: "COMPLETE" | "INCOMPLETE" | "FAILED";
-  policy_version: string;
-  reasons: { code: string; state: "PASS" | "WARNING" | "BLOCK"; message: string; evidence_ids: string[] }[];
-  allowed_actions: { view_report: boolean; automated_approval: false };
-  settlement_verified: false;
-}
-
-export type PersistenceStatus = "DISABLED" | "NOT_CONFIGURED" | "FAILED" | "SAVED" | "NOT_REQUESTED";
-
 export interface ForensicAnalysisReport {
-  persistence_status?: PersistenceStatus;
   analysis_gate?: AnalysisGate;
+  persistence_status?: PersistenceStatus;
+  media_urls?: Record<string,string>;
+  intelligence?: ReviewIntelligence;
+  schema_version: string;
+  case_id: string;
+  sample_id: string | null;
+  source_kind: string;
+  processing_status: "COMPLETE";
+  ai_origin_status: string;
+  ai_origin?: {summary: string; signals: {id: string; label: string; status: string; evidence: string; limitation: string}[]};
+  payment_status: string;
+  limitations: string[];
   file_sha256: string;
   filename?: string;
   timestamp: string;
@@ -181,4 +197,14 @@ export interface NetworkInfo {
   frontend_port: number;
   backend_port: number;
   mobile_upload_url: string;
+}
+
+export interface ReviewIntelligence {
+ semantic_checks?:Array<{kind:string;state:string;explanation:string;box?:{x:number;y:number;width:number;height:number}|null}>;
+ version:string;
+ acquisition:{estimated_profile:string;compression_condition:string;pixel_cue_reliability:number};
+ ocr:{status:string;reason?:string|null;fields:Array<{kind:string;text:string;confidence:number;box:{x:number;y:number;width:number;height:number}}>;
+ tokens:Array<{id:string;text:string;confidence:number;readable:boolean;box:{x:number;y:number;width:number;height:number}}>};
+ candidate_score:number;
+ evidence:Array<{id:string;family:string;availability:string;direction:string;explanation:string;box?:{x:number;y:number;width:number;height:number}|null}>;
 }

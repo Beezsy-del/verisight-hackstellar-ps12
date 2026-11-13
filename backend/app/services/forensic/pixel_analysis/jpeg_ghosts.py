@@ -7,9 +7,10 @@ import numpy as np
 def run_jpeg_ghost_analysis(
     img_bgr: np.ndarray
 ) -> dict[str, Any]:
-    """Measure whole-thumbnail reconstruction error across JPEG qualities.
-
-    This summary does not localize a JPEG ghost or determine editing history.
+    """
+    JPEG Ghost & Quantization Inconsistency Analysis.
+    Sweeps candidate qualities q in [55, 95] to measure local error minimas,
+    detecting regions compressed at an earlier, different JPEG quality than the carrier.
     """
     h, w = img_bgr.shape[:2]
     # Resize thumbnail for fast sweep

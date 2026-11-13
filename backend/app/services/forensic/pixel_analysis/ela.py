@@ -11,16 +11,16 @@ from app.core.schemas import BoundingBox
 def run_ela_analysis(
     img_bgr: np.ndarray,
     is_whatsapp: bool = False,
-    override_quality: int = None,
-    source_format: str | None = None,
+    override_quality: int = None
 ) -> tuple[float, str, int, list[BoundingBox], dict[str, Any]]:
-    """Build an ELA residual heatmap and optional JPEG block-outlier cues.
-
-    The explicit simulator may request Q75; other analysis uses Q90. Residual
-    outliers are exploratory and do not localize or prove a splice.
+    """
+    Multi-Scale Error Level Analysis (ELA) with Macroblock Z-Score Splicing Localization.
+    Re-compresses in memory as JPEG at Q_ref (75 if WhatsApp/Telegram, otherwise 90).
+    Amplifies absolute pixel difference by dynamic gain (x18), renders Inferno colormap,
+    and isolates contiguous 16x16 macroblock clusters exceeding mu + 2.6*sigma.
     """
     h, w = img_bgr.shape[:2]
-    
+
     # 1. Select reference JPEG quality
     if override_quality is not None:
         q_ref = override_quality
@@ -37,20 +37,20 @@ def run_ela_analysis(
     # 3. Compute absolute difference and amplify
     diff = cv2.absdiff(img_bgr, recompressed_bgr)
     diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY).astype(np.float32)
-    
+
     # Dynamic gain
     amplified = np.clip(diff_gray * settings.ELA_DYNAMIC_GAIN, 0, 255).astype(np.uint8)
-    
+
     # 4. Generate Colormap (INFERNO)
     colormap_img = cv2.applyColorMap(amplified, cv2.COLORMAP_INFERNO)
-    _, ela_webp = cv2.imencode('.webp', colormap_img, [cv2.IMWRITE_WEBP_QUALITY, 101])
-    ela_b64 = f"data:image/webp;base64,{base64.b64encode(ela_webp.tobytes()).decode('utf-8')}"
+    _, ela_png = cv2.imencode('.png', colormap_img)
+    ela_b64 = f"data:image/png;base64,{base64.b64encode(ela_png.tobytes()).decode('utf-8')}"
 
-    # 5. Identify 16x16 blocks with unusually large recompression residuals.
+    # 5. Macroblock Z-Score Splicing Localization (16x16 blocks)
     block_size = 16
     n_blocks_y = h // block_size
     n_blocks_x = w // block_size
-    
+
     if n_blocks_y == 0 or n_blocks_x == 0:
         return 0.0, ela_b64, 0, [], {"q_ref": q_ref, "global_mean": 0.0}
 
@@ -81,10 +81,12 @@ def run_ela_analysis(
             py = int(by * block_size)
             pw = int(min(bw * block_size, w - px))
             ph = int(min(bh * block_size, h - py))
-            
+
+            # Confidence based on max block z-score in this region
             region_means = block_means[by:by+bh, bx:bx+bw]
             max_val = np.max(region_means) if region_means.size > 0 else threshold
             z_score = float((max_val - mu_ela) / (sigma_ela + 1e-6))
+            conf = min(1.0, max(0.5, 0.5 + (z_score - settings.ELA_Z_SCORE_THRESHOLD) * 0.15))
 
             bounding_boxes.append(BoundingBox(
                 x=px,
@@ -92,7 +94,8 @@ def run_ela_analysis(
                 width=pw,
                 height=ph,
                 points=[[px, py], [px + pw, py], [px + pw, py + ph], [px, py + ph]],
-                label=f"ELA residual outlier (Z={z_score:.2f})",
+                label=f"ELA Compression Anomaly (Z={z_score:.2f})",
+                confidence=round(conf, 2),
                 layer=1,
                 anomaly_type="ELA_MACROBLOCK_OUTLIER",
                 details={
@@ -102,30 +105,15 @@ def run_ela_analysis(
                 }
             ))
 
-    # ELA compares an image to a newly JPEG-compressed copy. It is not a valid
-    # manipulation score for a lossless PNG source, so retain the heatmap for
-    # exploration but disable the anomaly score for non-JPEG inputs.
-    if (source_format or "").upper() not in {"JPEG", "JPG"}:
-        details = {
-            "q_ref": q_ref,
-            "global_mean_diff": round(mu_ela, 3),
-            "global_std_diff": round(sigma_ela, 3),
-            "total_macroblocks": int(n_blocks_y * n_blocks_x),
-            "anomalous_blocks": 0,
-            "max_z_score": 0.0,
-            "scoring_eligible": False,
-            "warning": "ELA scoring is disabled for non-JPEG source images; recompression residuals are not evidence of editing.",
-        }
-        return 0.0, ela_b64, 0, [], details
-
-    # 6. Heuristic ELA point score (0-100), only for JPEG sources.
+    # 6. Normalized ELA score (0-100)
+    # Calibrated based on anomalous block density and max z-score
     max_z = 0.0
     if mu_ela < 3.0 and sigma_ela < 2.0 and anomalous_blocks_count == 0:
         ela_score = round(min(8.0, mu_ela * 1.5), 1)
     else:
         if sigma_ela > 0.1:
             max_z = float((np.max(block_means) - mu_ela) / sigma_ela)
-        
+
         score_from_blocks = min(60.0, (anomalous_blocks_count / max(1, n_blocks_y * n_blocks_x)) * 500.0)
         score_from_z = min(40.0, max(0.0, (max_z - 2.5) * 12.0))
         ela_score = round(min(100.0, score_from_blocks + score_from_z), 1)

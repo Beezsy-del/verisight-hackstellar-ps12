@@ -95,6 +95,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
 
   return (
     <div
+      role="dialog" aria-label="Mobile intake"
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
     >
@@ -110,7 +111,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-sm text-[#f1f5f9] tracking-wide">
-                Stage Judge Live Mobile Upload
+                Mobile evidence intake
               </h3>
               <p className="text-[11px] text-[#64748b]">
                 Real-time zero-cable screenshot analysis direct from smartphone
@@ -120,6 +121,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close mobile intake"
             className="p-1.5 rounded-lg text-[#64748b] hover:text-[#f1f5f9] hover:bg-[#1e293b] transition-all"
           >
             <X className="w-4 h-4" />

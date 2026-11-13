@@ -110,6 +110,7 @@ def run_cielab_patch_and_sharpness_audit(
                 height=int(h),
                 points=[[x, y], [x + w, y], [x + w, y + h], [x, y + h]],
                 label=f"Color Patch Mismatch (ΔE={delta_e:.1f})",
+                confidence=round(conf, 2),
                 layer=2,
                 anomaly_type="LOCAL_BACKGROUND_PATCH_MISMATCH",
                 details={
@@ -142,6 +143,7 @@ def run_cielab_patch_and_sharpness_audit(
                             height=int(token.h),
                             points=[[token.x, token.y], [token.x + token.w, token.y], [token.x + token.w, token.y + token.h], [token.x, token.y + token.h]],
                             label=f"Anti-Aliasing Sharpness Inconsistency (Z={z_sharp:.2f})",
+                            confidence=min(0.95, 0.60 + abs(z_sharp - 2.1) * 0.1),
                             layer=2,
                             anomaly_type="SHARPNESS_Z_ANOMALY",
                             details={"sharpness_z_score": round(z_sharp, 2)}

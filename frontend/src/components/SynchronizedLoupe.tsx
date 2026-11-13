@@ -34,7 +34,7 @@ export const SynchronizedLoupe: React.FC<SynchronizedLoupeProps> = ({
   return (
     <div
       className="absolute bottom-4 right-4 z-30 bg-[#070b14]/95 border border-[#334155] rounded-xl p-3 shadow-2xl backdrop-blur flex flex-col space-y-2 pointer-events-none"
-      style={{ width: size * 2 + 32 }}
+      style={{ width: size * 2 + 32, maxWidth: "calc(100% - 16px)" }}
     >
       <div className="flex items-center justify-between border-b border-[#1e293b] pb-1.5 text-[11px] font-mono text-[#94a3b8]">
         <div className="flex items-center space-x-1.5 text-sky-400">
@@ -63,7 +63,7 @@ export const SynchronizedLoupe: React.FC<SynchronizedLoupeProps> = ({
               width: size,
               height: size,
               backgroundImage: `url(${originalImgSrc})`,
-              backgroundPosition: `${x}% ${y}%`,
+              backgroundPosition: `${size/2 - actualX * zoomFactor}px ${size/2 - actualY * zoomFactor}px`,
               backgroundSize: `${imgWidth * zoomFactor}px ${imgHeight * zoomFactor}px`,
               backgroundRepeat: "no-repeat",
             }}
@@ -89,7 +89,7 @@ export const SynchronizedLoupe: React.FC<SynchronizedLoupeProps> = ({
                 width: size,
                 height: size,
                 backgroundImage: `url(${spectralImgSrc})`,
-                backgroundPosition: `${x}% ${y}%`,
+                backgroundPosition: `${size/2 - actualX * zoomFactor}px ${size/2 - actualY * zoomFactor}px`,
                 backgroundSize: `${imgWidth * zoomFactor}px ${imgHeight * zoomFactor}px`,
                 backgroundRepeat: "no-repeat",
               }}
